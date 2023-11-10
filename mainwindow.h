@@ -20,6 +20,9 @@
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QStandardItemModel>
+#include <QThread>
+#include <QMap>
+#include <QList>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 
@@ -78,6 +81,8 @@ private slots:
 
     void on_pushButton_nextPage_clicked();
 
+    bool analysisLyricsFile(QString line);
+
 private:
     Ui::MainWindow *ui;
     Ui::lyricShow *lyricWeight;
@@ -103,5 +108,6 @@ private:
     bool bMute; //是否静音
     QString musicName,singerName,albumName;
     QByteArray searchInfo;
+    QMap<int, QString> allLyricMap;
 };
 #endif // MAINWINDOW_H

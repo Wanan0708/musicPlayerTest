@@ -61,12 +61,12 @@
      <rect>
       <x>100</x>
       <y>539</y>
-      <width>161</width>
+      <width>201</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>歌词</string>
+     <string>NULL</string>
     </property>
    </widget>
    <widget class="QSlider" name="horizontalSlider_songSlider">

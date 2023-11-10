@@ -77,19 +77,19 @@ void MainWindow::getWeight(int id)
     ui->stackedWidget->setCurrentIndex(id);
 }
 
-
+//关闭软件
 void MainWindow::on_pushButton_quit_clicked()
 {
     this->close();
 }
 
-
+//最小化
 void MainWindow::on_pushButton_minimize_clicked()
 {
     this->showMinimized();
 }
 
-
+//搜索栏
 void MainWindow::on_lineEdit_search_returnPressed()
 {
     QString str = ui->lineEdit_search->text();
@@ -204,7 +204,7 @@ void MainWindow::databack(QNetworkReply *reply)
             ui->tableView_search->hideColumn(6);
         }
     }
-    else if(keys.contains("lrc"))
+    else if(keys.contains("lrc")) //处理歌词
     {
         QJsonObject lrcObject = totalObject["lrc"].toObject();     //就将带 msg 的内容提取后转换为对象
         QStringList resultKeys = lrcObject.keys();      //保存所有key
@@ -297,9 +297,16 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
 
 void MainWindow::slotSongSliderPosChanged(qint64 pos)
 {
-//    qDebug() << Q_FUNC_INFO;
+    qDebug() << Q_FUNC_INFO << pos;
     ui->horizontalSlider_songSlider->setValue(pos/1000);
     ui->label_curSongTime->setText(QString("%1").arg(pos/1000/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(pos/1000%60, 2, 10, QLatin1Char('0')));
+
+    int iValue = pos / 1000;
+    qDebug() << __LINE__ << iValue << allLyricMap.keys();
+    if(allLyricMap.keys().contains(iValue))
+    {
+        ui->label_lyric->setText(allLyricMap.value(iValue));
+    }
 }
 
 //拖动音量进度条
@@ -448,12 +455,27 @@ void MainWindow::GetSongLyricBySongId(QString musicId)
         return;
     }
 
+    allLyricMap.clear();
+
     QString strUrl = QString("http://music.163.com/api/song/lyric?id=%1&lv=1&kv=1&tv=-1").arg(musicId);
     qDebug() << "QSslSocket=" << QSslSocket::sslLibraryBuildVersionString(); //电脑没配置https
     qDebug() << "OpenSSL支持情况:" << QSslSocket::supportsSsl();
 
     networkRequest->setUrl(QUrl(strUrl));
     networkManager->get(*networkRequest);
+
+    QThread::msleep(500);
+    QFile file("./lyric.txt");
+    QTextStream in(&file);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        while (!in.atEnd())
+        {
+            QString strLineStream = in.readLine();
+            analysisLyricsFile(strLineStream);//解析歌词文件内容
+        }
+        file.close();
+    }
 }
 
 //打开歌词窗口
@@ -487,3 +509,26 @@ void MainWindow::on_pushButton_nextPage_clicked()
     networkManager->get(*networkRequest);
 }
 
+//分析歌词
+bool MainWindow::analysisLyricsFile(QString line)
+{
+    if(line == NULL || line.isEmpty()){
+        qDebug()<<"thie line is empty!";
+        return false;
+    }
+    QRegularExpression regularExpression("\\[(\\d+)?:(\\d+)?(\\.\\d+)?\\](.*)?");
+    int index = 0;
+    QRegularExpressionMatch match;
+    match = regularExpression.match(line, index);
+    qDebug() << __LINE__ << match.hasMatch() << line;
+    if(match.hasMatch()) {
+        int totalTime;
+        totalTime = match.captured(1).toInt() * 60000 + match.captured(2).toInt() * 1000;                    /*  计算该时间点毫秒数            */
+        QString currentText =QString::fromStdString(match.captured(4).toStdString());      /*   获取歌词文本*/
+        qDebug() << __LINE__ << currentText << totalTime << ui->horizontalSlider_songSlider->value();
+
+        allLyricMap.insert(totalTime / 1000, currentText);
+        return true;
+    }
+    return false;
+}
