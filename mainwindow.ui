@@ -230,7 +230,41 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">    color: black;                                       /*表格内文字颜色*/
+    gridline-color: black;                              /*表格内框颜色*/
+    /*表格内背景色*/
+    /*alternate-background-color: rgb(255, 255, 255);*/
+    selection-color: black;                             /*选中区域的文字颜色*/
+    selection-background-color: rgb(245, 245, 245);        /*选中区域的背景色*/
+
+    border: 0px groove rgb(240, 240, 240);
+    padding: 1px 0px;</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_lastPage">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>415</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>上一页</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_nextPage">
+      <property name="geometry">
+       <rect>
+        <x>365</x>
+        <y>415</y>
+        <width>75</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>下一页</string>
       </property>
      </widget>
     </widget>
@@ -349,7 +383,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
      <string/>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="pushButton_minPhoto">
     <property name="geometry">
      <rect>
       <x>20</x>

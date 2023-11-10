@@ -20,6 +20,8 @@
 #include <QTextDocument>
 #include <QTextBlock>
 #include <QStandardItemModel>
+#include "lyricshow.h"
+#include "ui_lyricshow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,9 +36,10 @@ public:
     ~MainWindow();
 
     void init();
-    void GetSongLyricBySongId(QString Id);
+    void GetSongLyricBySongId(QString musicId);
 
-public:
+signals:
+    void changeLyric();
 
 private slots:
     void getWeight(int id);
@@ -69,16 +72,25 @@ private slots:
 
     void on_pushButton_volume_clicked();
 
+    void on_pushButton_minPhoto_clicked();
+
+    void on_pushButton_lastPage_clicked();
+
+    void on_pushButton_nextPage_clicked();
+
 private:
     Ui::MainWindow *ui;
+    Ui::lyricShow *lyricWeight;
+
+    lyricShow lyric;
 
     QNetworkAccessManager *networkManager;
     QNetworkRequest *networkRequest;
 
     QStandardItemModel* model;
-    QString durationTime;
+    QString durationTime; //音乐时长
     QString positionTime;
-    QNetworkAccessManager* manager;
+    QString imgAddress;
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
     QTextDocument* doc;
@@ -87,9 +99,9 @@ private:
     int musicDuration; //音乐时长（未处理）
     int mvId; //mv
     int iCurVolume; //当前音量
+    int m_offset;
     bool bMute; //是否静音
     QString musicName,singerName,albumName;
     QByteArray searchInfo;
-
 };
 #endif // MAINWINDOW_H

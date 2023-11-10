@@ -9,13 +9,16 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    lyricshow.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    lyricshow.h \
     mainwindow.h
 
 FORMS += \
+    lyricshow.ui \
     mainwindow.ui
 
 # Default rules for deployment.
