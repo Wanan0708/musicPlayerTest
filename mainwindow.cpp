@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowFlag(Qt::FramelessWindowHint);
     setFixedSize(this->width(), this->height());
+    setWindowIcon(QIcon(":/new/prefix1/image/title.png"));
 
     lyricWeight = new Ui::lyricShow();
 
@@ -33,13 +34,27 @@ void MainWindow::init()
     playlist = new QMediaPlaylist();
     connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
 
+    //读取数据库内容并填充
+    if (!Datebase::instance()->createDB())
+    {
+//        QMessageBox::information(this, "数据库读取失败", "fialed to create database");
+    }
+    int iVolume = 0;
+    if(Datebase::instance()->selectVolumeFromDB(iVolume))
+    {
+        player->setVolume(iVolume);
+        iCurVolume = iVolume;
+        ui->lineEdit_initialV->setText(QString::number(iVolume));
+    }
+
     networkManager = new QNetworkAccessManager();
     qDebug() << __LINE__ << networkManager->supportedSchemes();
     networkRequest = new QNetworkRequest();
     connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::databack);
 
+    ui->horizontalSlider_songSlider->setMaximum(0);
     ui->horizontalSlider_volumeSlider->setMaximum(100);
-    ui->horizontalSlider_volumeSlider->setValue(30);
+    ui->horizontalSlider_volumeSlider->setValue(iVolume);
 
     ui->buttonGroup->setId(ui->pushButton_search,0);
     ui->buttonGroup->setId(ui->pushButton_songSheet,1);
@@ -63,6 +78,9 @@ void MainWindow::init()
     ui->tableView_search->verticalHeader()->setHidden(true);
     ui->tableView_search->setEditTriggers(QAbstractItemView::NoEditTriggers); //设置只读
 
+    ui->pushButton_lastPage->setVisible(false);
+    ui->pushButton_nextPage->setVisible(false);
+
     ui->tableView_search->setShowGrid(false);
 
     connect(&lyric, &lyricShow::beHide, this, [=](){
@@ -75,6 +93,15 @@ void MainWindow::getWeight(int id)
 {
     qDebug() << id;
     ui->stackedWidget->setCurrentIndex(id);
+    if (1 == id)
+    {
+        QString str = QString("http://music.163.com/api/playlist/detail?id=3778678");
+
+//        QString str = QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s={}&type=1000&offset=0&total=true&limit=8");
+
+        networkRequest->setUrl(QUrl(str));
+        networkManager->get(*networkRequest);
+    }
 }
 
 //关闭软件
@@ -108,7 +135,7 @@ void MainWindow::databack(QNetworkReply *reply)
     QVariant nCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     qDebug() << __LINE__ << nCode << reply->errorString();
     searchInfo = reply->readAll();
-    qDebug() << __LINE__ << searchInfo;
+//    qDebug() << __LINE__ << searchInfo;
     QJsonParseError err;               //错误信息对象
     QJsonDocument json_recv = QJsonDocument::fromJson(searchInfo,&err);//将json文本转换为 json 文件对象
     if(err.error != QJsonParseError::NoError)             //判断是否符合语法
@@ -117,15 +144,19 @@ void MainWindow::databack(QNetworkReply *reply)
         return;
     }
     QJsonObject totalObject = json_recv.object();
+    qDebug() << __LINE__ << json_recv;
     QStringList keys = totalObject.keys();    // 列出json里所有的key
     qDebug() << __LINE__ << keys;
     if(keys.contains("result"))                 //如果有结果
-    {       //在 json 文本中 {}花括号里面是QJsonObject对象, []方括号里面是QJsonArray
-
+    {
+        //在 json 文本中 {}花括号里面是QJsonObject对象, []方括号里面是QJsonArray
         QJsonObject resultObject = totalObject["result"].toObject();     //就将带 result 的内容提取后转换为对象
         QStringList resultKeys = resultObject.keys();      //保存所有key
+        qDebug() << __LINE__ << resultKeys;
         if(resultKeys.contains("songs"))                    //如果 key 为songs ,代表找到了歌曲
         {
+            ui->pushButton_lastPage->setVisible(true);
+            ui->pushButton_nextPage->setVisible(true); //搜到歌曲后允许上下翻页
             int k = 0;
             QJsonArray array = resultObject["songs"].toArray();
             for(const auto &i : qAsConst(array))                   //开始获取歌曲中的信息
@@ -182,6 +213,11 @@ void MainWindow::databack(QNetworkReply *reply)
                 model->setItem(k,4,new QStandardItem(time)); //歌曲时长
                 model->setItem(k,5,new QStandardItem(QString::number(musicId))); //歌曲ID
                 model->setItem(k,6,new QStandardItem(imgAddress)); //歌曲图片路径
+
+                model->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
+                model->item(k,2)->setToolTip(singerName);
+                model->item(k,3)->setToolTip(albumName);
+                model->item(k,4)->setToolTip(time);
                 model->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
                 model->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
                 model->item(k,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
@@ -211,6 +247,8 @@ void MainWindow::databack(QNetworkReply *reply)
         qDebug() << __LINE__ << resultKeys;
         if (resultKeys.contains("lyric"))
         {
+            allLyricMap.clear();
+
             QString strLyric = lrcObject["lyric"].toString();
             QStringList lyricList = strLyric.split("\n");
 
@@ -229,7 +267,14 @@ void MainWindow::databack(QNetworkReply *reply)
 
                 emit changeLyric();
             }
+            refrashLyric(); //获得新歌词后刷新歌词
         }
+    }
+    else if(keys.contains("msg")) //处理歌单
+    {
+        QJsonObject msgObject = totalObject["msg"].toObject();     //就将带 msg 的内容提取后转换为对象
+        QStringList msgKeys = msgObject.keys();      //保存所有key
+        qDebug() << __LINE__ << msgKeys;
     }
 }
 
@@ -239,10 +284,14 @@ void MainWindow::on_pushButton_playPause_clicked()
     if (QMediaPlayer::PlayingState == player->state())
     {
         player->pause();
+        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
     }
     else if (QMediaPlayer::PausedState == player->state() || QMediaPlayer::StoppedState == player->state())
     {
+        int iValue = ui->horizontalSlider_songSlider->value();
+        player->setPosition(iValue * 1000); //暂停状态时修改了进度条从修改完毕处播放
         player->play();
+        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
     }
     else
     {
@@ -288,6 +337,7 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
     qDebug() << "musicDuration: " << musicDuration;
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt()); //歌曲进度条
 
+    allLyricMap.clear();
     GetSongLyricBySongId(strMusicID);//获取歌词
 
     qDebug() << __LINE__ << strMusicImg;
@@ -297,14 +347,14 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
 
 void MainWindow::slotSongSliderPosChanged(qint64 pos)
 {
-    qDebug() << Q_FUNC_INFO << pos;
+//    qDebug() << Q_FUNC_INFO << pos / 1000 << allLyricMap.keys();
     ui->horizontalSlider_songSlider->setValue(pos/1000);
     ui->label_curSongTime->setText(QString("%1").arg(pos/1000/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(pos/1000%60, 2, 10, QLatin1Char('0')));
 
     int iValue = pos / 1000;
-    qDebug() << __LINE__ << iValue << allLyricMap.keys();
-    if(allLyricMap.keys().contains(iValue))
+    if(allLyricMap.contains(iValue))
     {
+        qDebug() << __LINE__ << allLyricMap.value(iValue);
         ui->label_lyric->setText(allLyricMap.value(iValue));
     }
 }
@@ -361,6 +411,7 @@ void MainWindow::on_pushButton_lastSong_clicked()
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt());
 
     GetSongLyricBySongId(strMusicID);
+//    QThread::msleep(500);
     emit changeLyric(); //更换歌词
 }
 
@@ -408,6 +459,7 @@ void MainWindow::on_pushButton_nextSong_clicked()
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt());
 
     GetSongLyricBySongId(strMusicID);
+//    QThread::msleep(500);
     emit changeLyric(); //更换歌词
 }
 
@@ -423,12 +475,14 @@ void MainWindow::on_horizontalSlider_songSlider_sliderMoved(int position)
 void MainWindow::on_horizontalSlider_songSlider_sliderPressed()
 {
     disconnect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
+    qDebug() << Q_FUNC_INFO << ui->horizontalSlider_songSlider->value();
 }
 
 
 void MainWindow::on_horizontalSlider_songSlider_sliderReleased()
 {
     connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
+    qDebug() << __LINE__ << ui->horizontalSlider_songSlider->value();
 }
 
 //设置是否静音
@@ -438,10 +492,12 @@ void MainWindow::on_pushButton_volume_clicked()
     {
         iCurVolume = player->volume();
         player->setVolume(0);
+        ui->pushButton_volume->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newMute.png');}");
     }
     else
     {
         player->setVolume(iCurVolume);
+        ui->pushButton_volume->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newVolume.png');}");
     }
 }
 
@@ -455,16 +511,14 @@ void MainWindow::GetSongLyricBySongId(QString musicId)
         return;
     }
 
-    allLyricMap.clear();
-
     QString strUrl = QString("http://music.163.com/api/song/lyric?id=%1&lv=1&kv=1&tv=-1").arg(musicId);
-    qDebug() << "QSslSocket=" << QSslSocket::sslLibraryBuildVersionString(); //电脑没配置https
-    qDebug() << "OpenSSL支持情况:" << QSslSocket::supportsSsl();
-
     networkRequest->setUrl(QUrl(strUrl));
     networkManager->get(*networkRequest);
+}
 
-    QThread::msleep(500);
+//刷新左下角单行显示歌词
+void MainWindow::refrashLyric()
+{
     QFile file("./lyric.txt");
     QTextStream in(&file);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -473,6 +527,8 @@ void MainWindow::GetSongLyricBySongId(QString musicId)
         {
             QString strLineStream = in.readLine();
             analysisLyricsFile(strLineStream);//解析歌词文件内容
+
+            QCoreApplication::processEvents();
         }
         file.close();
     }
@@ -523,12 +579,82 @@ bool MainWindow::analysisLyricsFile(QString line)
     qDebug() << __LINE__ << match.hasMatch() << line;
     if(match.hasMatch()) {
         int totalTime;
-        totalTime = match.captured(1).toInt() * 60000 + match.captured(2).toInt() * 1000;                    /*  计算该时间点毫秒数            */
-        QString currentText =QString::fromStdString(match.captured(4).toStdString());      /*   获取歌词文本*/
-        qDebug() << __LINE__ << currentText << totalTime << ui->horizontalSlider_songSlider->value();
+        totalTime = match.captured(1).toInt() * 60000 + match.captured(2).toInt() * 1000; //计算该时间点毫秒数
+        QString currentText =QString::fromStdString(match.captured(4).toStdString()); //获取歌词文本
+        qDebug() << __LINE__ << currentText << totalTime;
 
-        allLyricMap.insert(totalTime / 1000, currentText);
+        if (!currentText.isEmpty())
+        {
+            allLyricMap.insert(totalTime / 1000, currentText);
+        }
+
         return true;
     }
     return false;
 }
+
+//点击歌曲进度条
+void MainWindow::on_horizontalSlider_songSlider_actionTriggered(int action)
+{
+    qDebug() << __LINE__ << ui->horizontalSlider_songSlider->value() << action;
+    if (ui->horizontalSlider_songSlider->value() >= ui->horizontalSlider_songSlider->maximum() || ui->horizontalSlider_songSlider->value() <= 0)
+    {
+        return;
+    }
+
+    int iValue = ui->horizontalSlider_songSlider->value();
+    int iMaximum = ui->horizontalSlider_songSlider->maximum();
+    if (3 == action) //点击进度条前面
+    {
+        qDebug() << __LINE__ << ui->horizontalSlider_songSlider->value() << iValue;
+        if (iValue + 10 >= iMaximum) //步进为10，超出范围则设置为最大值
+        {
+            player->setPosition(iMaximum * 1000);
+            emit player->positionChanged(iMaximum * 1000);
+            ui->horizontalSlider_songSlider->setValue(iMaximum);
+            ui->label_curSongTime->setText(QString("%1").arg(iMaximum/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(iMaximum%60, 2, 10, QLatin1Char('0')));
+        }
+        else
+        {
+            player->setPosition(iValue * 1000 + 10000);
+            emit player->positionChanged(iValue * 1000);
+            ui->horizontalSlider_songSlider->setValue(iValue + 10);
+            ui->label_curSongTime->setText(QString("%1").arg(iValue/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(iValue%60, 2, 10, QLatin1Char('0')));
+        }
+    }
+    else if (4 == action) //点击进度条后面
+    {
+        qDebug() << __LINE__ << ui->horizontalSlider_songSlider->value() << iValue;
+        if (iValue <= 10) //步进为10，小于10则归零
+        {
+            player->setPosition(0);
+            emit player->positionChanged(0);
+            ui->horizontalSlider_songSlider->setValue(0);
+            ui->label_curSongTime->setText(QString("%1").arg(0/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(0%60, 2, 10, QLatin1Char('0')));
+        }
+        else
+        {
+            player->setPosition(iValue * 1000 - 10000);
+            emit player->positionChanged(iValue * 1000);
+            ui->horizontalSlider_songSlider->setValue(iValue - 10);
+            ui->label_curSongTime->setText(QString("%1").arg(iValue/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(iValue%60, 2, 10, QLatin1Char('0')));
+        }
+    }
+    else
+    {
+        qDebug() << __LINE__ << ui->horizontalSlider_songSlider->value();
+    }
+}
+
+//保存设置
+void MainWindow::on_pushButton_saveSetting_clicked()
+{
+    int iVolume = ui->lineEdit_initialV->text().toInt();
+    if (iVolume < 0 || iVolume > 100)
+    {
+        QMessageBox::information(this, "保存失败", "请输入数值为0~100");
+        return;
+    }
+    Datebase::instance()->updateVolumeToDB(iVolume);
+}
+

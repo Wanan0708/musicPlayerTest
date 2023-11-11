@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>826</width>
+    <width>794</width>
     <height>573</height>
    </rect>
   </property>
@@ -17,11 +17,49 @@
    <widget class="QLineEdit" name="lineEdit_search">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>80</x>
       <y>10</y>
       <width>301</width>
       <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLineEdit {
+	border: 1px solid #A0A0A0; /* 边框宽度为1px，颜色为#A0A0A0 */
+	border-radius: 3px; /* 边框圆角 */
+	padding-left: 5px; /* 文本距离左边界有5px */
+	background-color: #F0E5F4; /* 背景颜色 */
+	color: #708090; /* 文本颜色 */
+	selection-background-color: #A0A0A0; /* 选中文本的背景颜色 */
+	selection-color: #F2F2F2; /* 选中文本的颜色 */
+	font-family: &quot;Microsoft YaHei&quot;; /* 文本字体族 */
+	font-size: 10pt; /* 文本字体大小 */
+}
+
+QLineEdit:hover { /* 鼠标悬浮在QLineEdit时的状态 */
+	border: 1px solid #298DFF;
+	border-radius: 3px;
+	background-color: #F2F2F2;
+	color: #298DFF;
+	selection-background-color: #298DFF;
+	selection-color: #F2F2F2;
+}
+
+QLineEdit[echoMode=&quot;2&quot;] { /* QLineEdit有输入掩码时的状态 */
+	lineedit-password-character: 9679;
+	lineedit-password-mask-delay: 2000;
+}
+
+QLineEdit:disabled { /* QLineEdit在禁用时的状态 */
+	border: 1px solid #CDCDCD;
+	background-color: #CDCDCD;
+	color: #B4B4B4;
+}
+
+QLineEdit:read-only { /* QLineEdit在只读时的状态 */
+	background-color: #CDCDCD;
+	color: #F2F2F2;
+}</string>
     </property>
     <property name="placeholderText">
      <string>点击开始搜索</string>
@@ -30,9 +68,9 @@
    <widget class="QPushButton" name="pushButton_login">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>250</y>
-      <width>91</width>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -46,37 +84,118 @@
    <widget class="QLabel" name="label_songName">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>80</x>
       <y>499</y>
       <width>141</width>
       <height>31</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 14px;
+    color: #BDC8E2;
+}
+</string>
+    </property>
     <property name="text">
-     <string>NULL</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label_lyric">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>539</y>
+      <x>80</x>
+      <y>529</y>
       <width>201</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 14px;
+    color: #708090;
+}</string>
+    </property>
     <property name="text">
-     <string>NULL</string>
+     <string/>
     </property>
    </widget>
    <widget class="QSlider" name="horizontalSlider_songSlider">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>250</x>
       <y>499</y>
       <width>391</width>
-      <height>22</height>
+      <height>21</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">/*horizontal ：水平QSlider*/
+QSlider::groove:horizontal {
+border: 0px solid #bbb;
+}
+
+/*1.滑动过的槽设计参数*/
+QSlider::sub-page:horizontal {
+ /*槽颜色*/
+background: rgb(90,49,255);
+ /*外环区域倒圆角度*/
+border-radius: 2px;
+ /*上遮住区域高度*/
+margin-top:8px;
+ /*下遮住区域高度*/
+margin-bottom:8px;
+/*width在这里无效，不写即可*/
+}
+
+/*2.未滑动过的槽设计参数*/
+QSlider::add-page:horizontal {
+/*槽颜色*/
+background: rgb(255,255, 255);
+/*外环大小0px就是不显示，默认也是0*/
+border: 0px solid #777;
+/*外环区域倒圆角度*/
+border-radius: 2px;
+ /*上遮住区域高度*/
+margin-top:9px;
+ /*下遮住区域高度*/
+margin-bottom:9px;
+}
+ 
+/*3.平时滑动的滑块设计参数*/
+QSlider::handle:horizontal {
+/*滑块颜色*/
+background: rgb(193,204,208);
+/*滑块的宽度*/
+width: 5px;
+/*滑块外环为1px，再加颜色*/
+border: 1px solid rgb(193,204,208);
+ /*滑块外环倒圆角度*/
+border-radius: 2px; 
+ /*上遮住区域高度*/
+margin-top:6px;
+ /*下遮住区域高度*/
+margin-bottom:6px;
+}
+
+/*4.手动拉动时显示的滑块设计参数*/
+QSlider::handle:horizontal:hover {
+/*滑块颜色*/
+background: rgb(193,204,208);
+/*滑块的宽度*/
+width: 10px;
+/*滑块外环为1px，再加颜色*/
+border: 1px solid rgb(193,204,208);
+ /*滑块外环倒圆角度*/
+border-radius: 5px; 
+ /*上遮住区域高度*/
+margin-top:4px;
+ /*下遮住区域高度*/
+margin-bottom:4px;
+}
+</string>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -85,7 +204,7 @@
    <widget class="QPushButton" name="pushButton_lastSong">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>330</x>
       <y>521</y>
       <width>51</width>
       <height>41</height>
@@ -93,7 +212,7 @@
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton { 
-	 border-image: url(&quot;:/new/prefix1/image/lastMusic.png&quot;);
+	 border-image: url(&quot;:/new/prefix1/image/lastSong.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -103,15 +222,15 @@
    <widget class="QPushButton" name="pushButton_playPause">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>519</y>
-      <width>54</width>
-      <height>44</height>
+      <x>388</x>
+      <y>517</y>
+      <width>61</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
-border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
+border-image: url(&quot;:/new/prefix1/image/newPlay.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -121,7 +240,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_nextSong">
     <property name="geometry">
      <rect>
-      <x>470</x>
+      <x>450</x>
       <y>521</y>
       <width>51</width>
       <height>41</height>
@@ -129,7 +248,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {	 
-	border-image: url(&quot;:/new/prefix1/image/nextMusic.png&quot;);
+	border-image: url(&quot;:/new/prefix1/image/nextSong.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -139,11 +258,77 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QSlider" name="horizontalSlider_volumeSlider">
     <property name="geometry">
      <rect>
-      <x>650</x>
+      <x>630</x>
       <y>529</y>
       <width>121</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">/*horizontal ：水平QSlider*/
+QSlider::groove:horizontal {
+border: 0px solid #bbb;
+}
+
+/*1.滑动过的槽设计参数*/
+QSlider::sub-page:horizontal {
+ /*槽颜色*/
+background: rgb(90,49,255);
+ /*外环区域倒圆角度*/
+border-radius: 2px;
+ /*上遮住区域高度*/
+margin-top:8px;
+ /*下遮住区域高度*/
+margin-bottom:8px;
+/*width在这里无效，不写即可*/
+}
+
+/*2.未滑动过的槽设计参数*/
+QSlider::add-page:horizontal {
+/*槽颜色*/
+background: rgb(255,255, 255);
+/*外环大小0px就是不显示，默认也是0*/
+border: 0px solid #777;
+/*外环区域倒圆角度*/
+border-radius: 2px;
+ /*上遮住区域高度*/
+margin-top:9px;
+ /*下遮住区域高度*/
+margin-bottom:9px;
+}
+ 
+/*3.平时滑动的滑块设计参数*/
+QSlider::handle:horizontal {
+/*滑块颜色*/
+background: rgb(193,204,208);
+/*滑块的宽度*/
+width: 5px;
+/*滑块外环为1px，再加颜色*/
+border: 1px solid rgb(193,204,208);
+ /*滑块外环倒圆角度*/
+border-radius: 2px; 
+ /*上遮住区域高度*/
+margin-top:6px;
+ /*下遮住区域高度*/
+margin-bottom:6px;
+}
+
+/*4.手动拉动时显示的滑块设计参数*/
+QSlider::handle:horizontal:hover {
+/*滑块颜色*/
+background: rgb(193,204,208);
+/*滑块的宽度*/
+width: 10px;
+/*滑块外环为1px，再加颜色*/
+border: 1px solid rgb(193,204,208);
+ /*滑块外环倒圆角度*/
+border-radius: 5px; 
+ /*上遮住区域高度*/
+margin-top:4px;
+ /*下遮住区域高度*/
+margin-bottom:4px;
+}
+</string>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -152,7 +337,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QLabel" name="label_curSongTime">
     <property name="geometry">
      <rect>
-      <x>700</x>
+      <x>680</x>
       <y>499</y>
       <width>41</width>
       <height>21</height>
@@ -168,7 +353,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_quit">
     <property name="geometry">
      <rect>
-      <x>790</x>
+      <x>760</x>
       <y>10</y>
       <width>21</width>
       <height>21</height>
@@ -182,7 +367,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
-    border-image: url(&quot;:/new/prefix1/image/quit.png&quot;);
+    border-image: url(&quot;:/new/prefix1/image/newQuit.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -192,15 +377,15 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_minimize">
     <property name="geometry">
      <rect>
-      <x>760</x>
-      <y>0</y>
-      <width>21</width>
-      <height>41</height>
+      <x>720</x>
+      <y>5</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
-    border-image: url(&quot;:/new/prefix1/image/minimize.png&quot;);
+    border-image: url(&quot;:/new/prefix1/image/newMini.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -210,7 +395,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>70</x>
       <y>50</y>
       <width>721</width>
       <height>441</height>
@@ -244,7 +429,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
      <widget class="QPushButton" name="pushButton_lastPage">
       <property name="geometry">
        <rect>
-        <x>280</x>
+        <x>270</x>
         <y>415</y>
         <width>75</width>
         <height>23</height>
@@ -257,7 +442,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
      <widget class="QPushButton" name="pushButton_nextPage">
       <property name="geometry">
        <rect>
-        <x>365</x>
+        <x>355</x>
         <y>415</y>
         <width>75</width>
         <height>23</height>
@@ -273,22 +458,59 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>0</y>
         <width>701</width>
-        <height>431</height>
+        <height>441</height>
        </rect>
       </property>
      </widget>
     </widget>
     <widget class="QWidget" name="page_3"/>
-    <widget class="QWidget" name="page_4"/>
+    <widget class="QWidget" name="page_4">
+     <widget class="QLabel" name="label_initialV">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>10</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>初始音量：</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_initialV">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>10</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_saveSetting">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>382</y>
+        <width>75</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>保存</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
    <widget class="QPushButton" name="pushButton_search">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>50</y>
-      <width>91</width>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -302,9 +524,9 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_songSheet">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>100</y>
-      <width>91</width>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -318,9 +540,9 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_rankList">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>150</y>
-      <width>91</width>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -334,9 +556,9 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_set">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>3</x>
       <y>200</y>
-      <width>91</width>
+      <width>71</width>
       <height>51</height>
      </rect>
     </property>
@@ -350,15 +572,15 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_volume">
     <property name="geometry">
      <rect>
-      <x>610</x>
-      <y>530</y>
+      <x>590</x>
+      <y>520</y>
       <width>31</width>
-      <height>23</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
-    border-image: url(&quot;:/new/prefix1/image/volume.png&quot;);
+    border-image: url(&quot;:/new/prefix1/image/newVolume.png&quot;);
 }</string>
     </property>
     <property name="text">
@@ -368,7 +590,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>12</x>
       <y>5</y>
       <width>61</width>
       <height>41</height>
@@ -386,7 +608,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QPushButton" name="pushButton_minPhoto">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>500</y>
       <width>61</width>
       <height>61</height>
@@ -404,7 +626,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>740</x>
+      <x>720</x>
       <y>499</y>
       <width>10</width>
       <height>21</height>
@@ -417,7 +639,7 @@ border-image: url(&quot;:/new/prefix1/image/playNew.png&quot;);
    <widget class="QLabel" name="label_totalSongTime">
     <property name="geometry">
      <rect>
-      <x>750</x>
+      <x>730</x>
       <y>499</y>
       <width>41</width>
       <height>21</height>

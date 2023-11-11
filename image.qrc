@@ -1,12 +1,14 @@
 <RCC>
     <qresource prefix="/new/prefix1">
-        <file>image/lastMusic.png</file>
-        <file>image/minimize.png</file>
-        <file>image/nextMusic.png</file>
-        <file>image/quit.png</file>
         <file>image/title.png</file>
         <file>image/volume.png</file>
-        <file>image/pause.png</file>
-        <file>image/playNew.png</file>
+        <file>image/newQuit.png</file>
+        <file>image/newMini.png</file>
+        <file>image/lastSong.png</file>
+        <file>image/nextSong.png</file>
+        <file>image/newPause.png</file>
+        <file>image/newPlay.png</file>
+        <file>image/newMute.png</file>
+        <file>image/newVolume.png</file>
     </qresource>
 </RCC>

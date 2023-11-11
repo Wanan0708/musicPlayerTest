@@ -23,8 +23,10 @@
 #include <QThread>
 #include <QMap>
 #include <QList>
+#include <QMessageBox>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
+#include "datebase.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -40,6 +42,8 @@ public:
 
     void init();
     void GetSongLyricBySongId(QString musicId);
+
+    void refrashLyric();
 
 signals:
     void changeLyric();
@@ -83,11 +87,16 @@ private slots:
 
     bool analysisLyricsFile(QString line);
 
+    void on_horizontalSlider_songSlider_actionTriggered(int action);
+
+
+    void on_pushButton_saveSetting_clicked();
+
 private:
     Ui::MainWindow *ui;
     Ui::lyricShow *lyricWeight;
 
-    lyricShow lyric;
+    lyricShow lyric; //歌词界面
 
     QNetworkAccessManager *networkManager;
     QNetworkRequest *networkRequest;
@@ -95,19 +104,19 @@ private:
     QStandardItemModel* model;
     QString durationTime; //音乐时长
     QString positionTime;
-    QString imgAddress;
-    QMediaPlayer *player;
-    QMediaPlaylist *playlist;
+    QString imgAddress; //专辑图片地址
+    QMediaPlayer *player; //播放器
+    QMediaPlaylist *playlist; //播放列表
     QTextDocument* doc;
     QTextBlock textLine;
     int musicId;//音乐ID
     int musicDuration; //音乐时长（未处理）
-    int mvId; //mv
+    int mvId; //mvID
     int iCurVolume; //当前音量
-    int m_offset;
+    int m_offset; //翻页
     bool bMute; //是否静音
     QString musicName,singerName,albumName;
     QByteArray searchInfo;
-    QMap<int, QString> allLyricMap;
+    QMap<int, QString> allLyricMap; //存储歌词
 };
 #endif // MAINWINDOW_H
