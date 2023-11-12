@@ -11,7 +11,22 @@ MainWindow::MainWindow(QWidget *parent)
     setFixedSize(this->width(), this->height());
     setWindowIcon(QIcon(":/new/prefix1/image/title.png"));
 
-    lyricWeight = new Ui::lyricShow();
+    QPalette pal(this->palette());
+    pal.setColor(QPalette::Background, Qt::white); //设置背景白色
+    this->setAutoFillBackground(true);
+    this->setPalette(pal);
+
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+    //设置阴影距离
+    shadow->setOffset(10, 10);
+    //设置阴影颜色
+    shadow->setColor(QColor("#140444"));
+    //设置阴影圆角
+    shadow->setBlurRadius(30);
+    //给嵌套QWidget设置阴影
+    this->setGraphicsEffect(shadow);
+    //给垂直布局器设置边距(此步很重要, 设置宽度为阴影的宽度)
+    this->setContentsMargins(1,1,1,1);
 
     init();
 }
@@ -19,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete lyricWeight;
     delete player;
     delete playlist;
 }
@@ -32,6 +46,7 @@ void MainWindow::init()
     player=new QMediaPlayer();
     player->setVolume(30);
     playlist = new QMediaPlaylist();
+    playlist->setPlaybackMode(QMediaPlaylist::CurrentItemOnce); //歌曲循环模式
     connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
 
     //读取数据库内容并填充
@@ -80,12 +95,60 @@ void MainWindow::init()
 
     ui->pushButton_lastPage->setVisible(false);
     ui->pushButton_nextPage->setVisible(false);
+    ui->pushButton_lastPage->setToolTip("上一页");
+    ui->pushButton_nextPage->setToolTip("下一页");
+    ui->pushButton_lastSong->setToolTip("上一曲");
+    ui->pushButton_nextSong->setToolTip("下一曲");
+    ui->pushButton_playPause->setToolTip("播放");
+    ui->pushButton_volume->setToolTip("静音");
+    ui->pushButton_quit->setToolTip("关闭");
+    ui->pushButton_minimize->setToolTip("最小化");
 
     ui->tableView_search->setShowGrid(false);
 
     connect(&lyric, &lyricShow::beHide, this, [=](){
         this->show();
     });
+
+    //播放完成后切换下一曲
+    connect(player, &QMediaPlayer::stateChanged, this, [=](QMediaPlayer::State state){
+        if (state == QMediaPlayer::StoppedState) {
+            qDebug() << "music play finished." << playlist->nextIndex(1) << playlist->previousIndex(1);
+            ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+            ui->pushButton_playPause->setToolTip("播放");
+//            playlist->next();
+
+//            QModelIndex curIndex = ui->tableView_search->currentIndex();
+//            int curRow = curIndex.row();
+//            qDebug() << __LINE__ << curRow;
+//            if (curRow < 0 || curRow > 12)
+//            {
+//                return;
+//            }
+//            ui->tableView_search->selectRow(curRow+1);
+//            refreshCurrentMusic(curRow+1);
+//            QStandardItemModel* tmpModel = new QStandardItemModel();
+//            QModelIndex indexID =model->index(curRow+1,5);  // 第5列是musicID
+//            on_tableView_search_doubleClicked(indexID);
+
+//            on_pushButton_nextSong_clicked();
+        }
+    });
+
+    //播放失败
+    connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), this,
+        [=](QMediaPlayer::Error error){
+        qDebug () << "playError: " << error;
+        ui->label_songName->setText("undefined error!");
+        allLyricMap.clear();
+        ui->label_lyric->clear();
+        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+        ui->pushButton_playPause->setToolTip("播放");
+        player->stop();
+    });
+
+//    connect(playlist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
+
     connect(this, &MainWindow::changeLyric, &lyric, &lyricShow::slotChangeLyric); //切换歌曲后歌词也切换
 }
 
@@ -119,6 +182,11 @@ void MainWindow::on_pushButton_minimize_clicked()
 //搜索栏
 void MainWindow::on_lineEdit_search_returnPressed()
 {
+    if (ui->lineEdit_search->text().isEmpty())
+    {
+        return;
+    }
+
     QString str = ui->lineEdit_search->text();
     m_offset = 0;
 //    str="http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s={"+str+"}&type=1&offset=%1&total=true&limit=13";//接入网易云API并且传入需要搜索的数据和返回的数量
@@ -278,24 +346,42 @@ void MainWindow::databack(QNetworkReply *reply)
     }
 }
 
+//播放暂停
 void MainWindow::on_pushButton_playPause_clicked()
 {
-    qDebug() << "state0: " << player->state();
+    QModelIndex curIndex = ui->tableView_search->currentIndex();
+    qDebug() << Q_FUNC_INFO << __LINE__ << ui->tableView_search->verticalHeader()->count();
+    if (model->item(0, 0) == NULL || model->item(0,0)->text().trimmed() == "")
+    {
+        return;
+    }
+
+    int row=curIndex.row();//获得当前行索引
+    if (row < 0 && QMediaPlayer::StoppedState == player->state()) //Table未选中则播放第一首歌
+    {
+        on_pushButton_nextSong_clicked();
+        return;
+    }
+
+    //播放三种状态
     if (QMediaPlayer::PlayingState == player->state())
     {
         player->pause();
-        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
+        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+        ui->pushButton_playPause->setToolTip("播放");
     }
-    else if (QMediaPlayer::PausedState == player->state() || QMediaPlayer::StoppedState == player->state())
+    else if (QMediaPlayer::PausedState == player->state())
     {
         int iValue = ui->horizontalSlider_songSlider->value();
         player->setPosition(iValue * 1000); //暂停状态时修改了进度条从修改完毕处播放
         player->play();
-        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+        ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
+        ui->pushButton_playPause->setToolTip("暂停");
     }
-    else
+    else if (QMediaPlayer::StoppedState == player->state())
     {
         qDebug() << "state1: " << player->state();
+        on_tableView_search_doubleClicked(curIndex);
     }
 }
 
@@ -303,7 +389,6 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
 {
     qDebug() << "index: " << index;
     int row=index.row();//获得当前行索引
-//    int col=index.column();//获得当前列索引
     ui->tableView_search->selectRow(row); //选中列
     QModelIndex indexID =model->index(row,5);  // 第5列是musicID
     QString strMusicID = model->data(indexID).toString();//获取索引对应位置的数据转为字符串
@@ -314,8 +399,12 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
     QString url;
     url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(strMusicID);
     playlist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
-    player->setMedia(playlist);                        //将列表设置到播放器中
+//    player->setMedia(playlist);                        //将列表设置到播放器中
+    player->setPlaylist(playlist);
+//    playlist->setCurrentIndex(row);
     player->play();                                  //播放
+    ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
+    ui->pushButton_playPause->setToolTip("暂停");
 
     QModelIndex indexSingerName = model->index(row, 1);
     QString strSongerName = model->data(indexSingerName).toString();
@@ -327,9 +416,6 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
     QString strMusicTime = model->data(indexTime).toString();
     ui->label_totalSongTime->setText(strMusicTime); // 歌曲时长
 
-    QModelIndex indexImg = model->index(row, 6);
-    QString strMusicImg = model->data(indexImg).toString();
-
     QStringList timeList = strMusicTime.split(":");
     QString strMinute = timeList.at(0);
     QString strSeconds = timeList.at(1);
@@ -337,9 +423,13 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
     qDebug() << "musicDuration: " << musicDuration;
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt()); //歌曲进度条
 
+//    refreshCurrentMusic(row);
+
     allLyricMap.clear();
     GetSongLyricBySongId(strMusicID);//获取歌词
 
+    QModelIndex indexImg = model->index(row, 6);
+    QString strMusicImg = model->data(indexImg).toString();
     qDebug() << __LINE__ << strMusicImg;
     networkRequest->setUrl(QUrl(strMusicImg)); //获取专辑图片
     networkManager->get(*networkRequest);
@@ -392,6 +482,8 @@ void MainWindow::on_pushButton_lastSong_clicked()
     playlist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
     player->setMedia(playlist);                        //将列表设置到播放器中
     player->play();                                  //播放
+    ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
+    ui->pushButton_playPause->setToolTip("暂停");
 
     QModelIndex indexSingerName = model->index(row, 1);
     QString strSongerName = model->data(indexSingerName).toString();
@@ -410,8 +502,9 @@ void MainWindow::on_pushButton_lastSong_clicked()
     qDebug() << "musicDuration: " << musicDuration;
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt());
 
+//    refreshCurrentMusic(row);
+
     GetSongLyricBySongId(strMusicID);
-//    QThread::msleep(500);
     emit changeLyric(); //更换歌词
 }
 
@@ -437,9 +530,11 @@ void MainWindow::on_pushButton_nextSong_clicked()
     playlist->clear();//清除播放列表
     QString url;
     url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(strMusicID);
-    playlist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
-    player->setMedia(playlist);                        //将列表设置到播放器中
-    player->play();                                  //播放
+    playlist->addMedia(QUrl(url));  //添加返回的音乐到播放列表中
+    player->setMedia(playlist);  //将列表设置到播放器中
+    player->play();  //播放
+    ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
+    ui->pushButton_playPause->setToolTip("暂停");
 
     QModelIndex indexSingerName = model->index(row, 1);
     QString strSongerName = model->data(indexSingerName).toString();
@@ -458,8 +553,9 @@ void MainWindow::on_pushButton_nextSong_clicked()
     qDebug() << "musicDuration: " << musicDuration;
     ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt());
 
+//    refreshCurrentMusic(row);
+
     GetSongLyricBySongId(strMusicID);
-//    QThread::msleep(500);
     emit changeLyric(); //更换歌词
 }
 
@@ -471,13 +567,11 @@ void MainWindow::on_horizontalSlider_songSlider_sliderMoved(int position)
     ui->label_curSongTime->setText(QString("%1").arg(position/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(position%60, 2, 10, QLatin1Char('0')));
 }
 
-
 void MainWindow::on_horizontalSlider_songSlider_sliderPressed()
 {
     disconnect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
     qDebug() << Q_FUNC_INFO << ui->horizontalSlider_songSlider->value();
 }
-
 
 void MainWindow::on_horizontalSlider_songSlider_sliderReleased()
 {
@@ -488,15 +582,15 @@ void MainWindow::on_horizontalSlider_songSlider_sliderReleased()
 //设置是否静音
 void MainWindow::on_pushButton_volume_clicked()
 {
-    if (0 != player->volume())
+    if (!player->isMuted())
     {
         iCurVolume = player->volume();
-        player->setVolume(0);
+        player->setMuted(true);
         ui->pushButton_volume->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newMute.png');}");
     }
     else
     {
-        player->setVolume(iCurVolume);
+        player->setMuted(false);
         ui->pushButton_volume->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newVolume.png');}");
     }
 }
@@ -548,6 +642,7 @@ void MainWindow::on_pushButton_lastPage_clicked()
     {
         return;
     }
+//    playlist->clear();//清除播放列表
     QString str = ui->lineEdit_search->text();
     m_offset -= 13;
     str=QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s={%1}&type=1&offset=%2&total=true&limit=13").arg(str).arg(m_offset);
@@ -558,6 +653,7 @@ void MainWindow::on_pushButton_lastPage_clicked()
 //下一页
 void MainWindow::on_pushButton_nextPage_clicked()
 {
+//    playlist->clear();//清除播放列表
     QString str = ui->lineEdit_search->text();
     m_offset += 13;
     str=QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s={%1}&type=1&offset=%2&total=true&limit=13").arg(str).arg(m_offset);
@@ -576,12 +672,11 @@ bool MainWindow::analysisLyricsFile(QString line)
     int index = 0;
     QRegularExpressionMatch match;
     match = regularExpression.match(line, index);
-    qDebug() << __LINE__ << match.hasMatch() << line;
     if(match.hasMatch()) {
         int totalTime;
         totalTime = match.captured(1).toInt() * 60000 + match.captured(2).toInt() * 1000; //计算该时间点毫秒数
         QString currentText =QString::fromStdString(match.captured(4).toStdString()); //获取歌词文本
-        qDebug() << __LINE__ << currentText << totalTime;
+//        qDebug() << __LINE__ << currentText << totalTime;
 
         if (!currentText.isEmpty())
         {
@@ -656,5 +751,33 @@ void MainWindow::on_pushButton_saveSetting_clicked()
         return;
     }
     Datebase::instance()->updateVolumeToDB(iVolume);
+}
+
+//切换歌后更新界面内容(未使用)
+void MainWindow::refreshCurrentMusic(int iCurrentRow)
+{
+    qDebug() << "index: " << iCurrentRow;
+
+    ui->tableView_search->selectRow(iCurrentRow); //选中列
+    QModelIndex indexID =model->index(iCurrentRow,5);  // 第5列是musicID
+    QString strMusicID = model->data(indexID).toString();//获取索引对应位置的数据转为字符串
+    qDebug() << "clicked: " << strMusicID;
+
+    QModelIndex indexSingerName = model->index(iCurrentRow, 1);
+    QString strSongerName = model->data(indexSingerName).toString();
+    QModelIndex indexSongName = model->index(iCurrentRow, 2);
+    QString strMusicSongName = model->data(indexSongName).toString();
+    ui->label_songName->setText(strMusicSongName + " - " + strSongerName); //歌曲名+歌手
+
+    QModelIndex indexTime = model->index(iCurrentRow, 4);
+    QString strMusicTime = model->data(indexTime).toString();
+    ui->label_totalSongTime->setText(strMusicTime); // 歌曲时长
+
+    QStringList timeList = strMusicTime.split(":");
+    QString strMinute = timeList.at(0);
+    QString strSeconds = timeList.at(1);
+    musicDuration = strMinute.toInt() * 60 + strSeconds.toInt();
+    qDebug() << "musicDuration: " << musicDuration;
+    ui->horizontalSlider_songSlider->setMaximum(strMinute.toInt() * 60 + strSeconds.toInt()); //歌曲进度条
 }
 

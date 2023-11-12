@@ -24,6 +24,8 @@
 #include <QMap>
 #include <QList>
 #include <QMessageBox>
+#include <QGraphicsDropShadowEffect>
+#include <QPainter>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 #include "datebase.h"
@@ -89,8 +91,9 @@ private slots:
 
     void on_horizontalSlider_songSlider_actionTriggered(int action);
 
-
     void on_pushButton_saveSetting_clicked();
+
+    void refreshCurrentMusic(int iCurrentRow);
 
 private:
     Ui::MainWindow *ui;

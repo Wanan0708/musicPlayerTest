@@ -8,6 +8,10 @@ lyricShow::lyricShow(QWidget *parent) :
     ui->setupUi(this);
     setWindowFlag(Qt::FramelessWindowHint);
     this->setWindowTitle("歌词显示");
+    QPalette pal(this->palette());
+    pal.setColor(QPalette::Background, Qt::white); //设置背景白色
+    this->setAutoFillBackground(true);
+    this->setPalette(pal);
     ui->textEdit_lyric->setReadOnly(true); //只读
 }
 
