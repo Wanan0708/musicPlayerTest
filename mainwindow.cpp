@@ -16,17 +16,13 @@ MainWindow::MainWindow(QWidget *parent)
     this->setAutoFillBackground(true);
     this->setPalette(pal);
 
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    //设置阴影距离
-    shadow->setOffset(10, 10);
-    //设置阴影颜色
-    shadow->setColor(QColor("#140444"));
-    //设置阴影圆角
-    shadow->setBlurRadius(30);
-    //给嵌套QWidget设置阴影
-    this->setGraphicsEffect(shadow);
-    //给垂直布局器设置边距(此步很重要, 设置宽度为阴影的宽度)
-    this->setContentsMargins(1,1,1,1);
+    QBitmap bmp(this->size());
+    bmp.fill();
+    QPainter p(&bmp);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRoundedRect(bmp.rect(),5,5);//像素为5的圆角
+    setMask(bmp);
 
     init();
 }

@@ -26,6 +26,7 @@
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
+#include <QBitmap>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 #include "datebase.h"
