@@ -111,6 +111,8 @@ void MainWindow::init()
     connect(this, &MainWindow::changeLyric, &lyric, &lyricShow::slotChangeLyric); //切换歌曲后歌词也切换
     connect(this, &MainWindow::changeSongImage, &lyric, &lyricShow::slotChangeSongImage); //切换歌曲后图片也切换
     connect(this, &MainWindow::modifiedSongInfor, &lyric, &lyricShow::slotModifiedSongInfor);
+    connect(this, &MainWindow::setLyricSig, &lyric, &lyricShow::slotGetLyric);
+    connect(this, &MainWindow::changeSingleLyric, &lyric, &lyricShow::slotChangeSingleLyric);
 }
 
 //初始化部分样式
@@ -266,12 +268,13 @@ void MainWindow::getWeight(int id)
     ui->stackedWidget->setCurrentIndex(id);
     if (1 == id) //歌单
     {
-        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
+//        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
 //        QString str = QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=李荣浩&type=1&offset=0&total=true&limit=8");
 //        QString str = "http://api.yimian.xyz/msc/?type=single&id=29764564";
 //        QString str = "http://api.yimian.xyz/msc/?type=cover&id=109951165182029540";
 //        QString str = "http://p3.music.126.net/0uZ_bKtm4E188Uk9LFN1qg==/109951163187393370.jpg?param=300y300";
 //        str = "http://api.wer.plus/api/wytop?t=1";
+        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184";
 
         networkRequest->setUrl(QUrl(str));
         networkManager->get(*networkRequest);
@@ -461,26 +464,26 @@ void MainWindow::databack(QNetworkReply *reply)
             allLyricMap.clear();
 
             QString strLyric = lrcObject["lyric"].toString();
-            QStringList lyricList = strLyric.split("\n");
+            lyricList = strLyric.split("\n");
 
-            QFile file("./lyric.txt");
-            file.remove();
-            if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
-            {
-                QTextStream stream(&file);
-                stream.seek(file.size());
-                for (auto& i : lyricList)
-                {
-                    QString strLineLyric;
-                    strLineLyric.append(i);
-                    stream << strLineLyric << "\n";
+//            QFile file("./lyric.txt"); //也可以使用文件保存歌词
+//            file.remove();
+//            if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
+//            {
+//                QTextStream stream(&file);
+//                stream.seek(file.size());
+//                for (auto& i : lyricList)
+//                {
+//                    QString strLineLyric;
+//                    strLineLyric.append(i);
+//                    stream << strLineLyric << "\n";
 
-//                    QCoreApplication::processEvents();
-                }
-                file.close();
+////                    QCoreApplication::processEvents();
+//                }
+//                file.close();
 
-                emit changeLyric();
-            }
+////                emit changeLyric();
+//            }
             refrashLyric(); //获得新歌词后刷新歌词
         }
     }
@@ -592,20 +595,6 @@ void MainWindow::databack(QNetworkReply *reply)
 //播放暂停
 void MainWindow::on_pushButton_playPause_clicked()
 {
-//    QModelIndex curIndex = ui->tableView_search->currentIndex();
-//    qDebug() << Q_FUNC_INFO << __LINE__ << ui->tableView_search->verticalHeader()->count();
-//    if (model->item(0, 0) == NULL || model->item(0,0)->text().trimmed() == "")
-//    {
-//        return;
-//    }
-
-//    int row=curIndex.row();//获得当前行索引
-//    if (row < 0 && QMediaPlayer::StoppedState == player->state()) //Table未选中则播放第一首歌
-//    {
-//        on_pushButton_nextSong_clicked();
-//        return;
-//    }
-
     //播放三种状态
     if (QMediaPlayer::PlayingState == player->state())
     {
@@ -625,13 +614,15 @@ void MainWindow::on_pushButton_playPause_clicked()
     {
         qDebug() << "state1: " << player->state();
 //        on_tableView_search_doubleClicked(curIndex);
-        if (searchPlaylist->isEmpty())
+        if (searchPlaylist->isEmpty() && hotSongPlaylist->isEmpty())
         {
             return;
         }
         player->play();
         ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPause.png');}");
         ui->pushButton_playPause->setToolTip("暂停");
+
+        emit repeatPlaySig();
     }
 }
 
@@ -699,7 +690,7 @@ void MainWindow::on_tableView_search_doubleClicked(const QModelIndex &index)
 //歌曲进度条移动
 void MainWindow::slotSongSliderPosChanged(qint64 pos)
 {
-//    qDebug() << Q_FUNC_INFO << pos / 1000 << allLyricMap.keys();
+//    qDebug() << Q_FUNC_INFO << pos << allLyricMap.keys();
     ui->horizontalSlider_songSlider->setValue(pos/1000);
     ui->label_curSongTime->setText(QString("%1").arg(pos/1000/60, 2, 10, QLatin1Char('0')) + ":" + QString("%2").arg(pos/1000%60, 2, 10, QLatin1Char('0')));
 
@@ -708,6 +699,8 @@ void MainWindow::slotSongSliderPosChanged(qint64 pos)
     {
         qDebug() << __LINE__ << allLyricMap.value(iValue);
         ui->label_lyric->setText(allLyricMap.value(iValue));
+
+        emit changeSingleLyric(iValue);
     }
 }
 
@@ -794,7 +787,7 @@ void MainWindow::on_pushButton_lastSong_clicked()
     emit modifiedSongInfor(tmpMap);
 
     GetSongLyricBySongId(strMusicID);
-    emit changeLyric(); //更换歌词
+//    emit changeLyric(); //更换歌词
 }
 
 //下一曲
@@ -870,7 +863,7 @@ void MainWindow::on_pushButton_nextSong_clicked()
     emit modifiedSongInfor(tmpMap);
 
     GetSongLyricBySongId(strMusicID);
-    emit changeLyric(); //更换歌词
+//    emit changeLyric(); //更换歌词
 }
 
 //拖动歌曲进度条
@@ -932,8 +925,8 @@ void MainWindow::GetSongLyricBySongId(QString musicId)
     }
 
     allLyricMap.clear();
-    QFile lyricFile("./lyric.txt");
-    lyricFile.remove();
+//    QFile lyricFile("./lyric.txt");
+//    lyricFile.remove();
     QString strUrl = QString("http://music.163.com/api/song/lyric?id=%1&lv=1&kv=1&tv=-1").arg(musicId);
     networkRequest->setUrl(QUrl(strUrl));
     networkManager->get(*networkRequest);
@@ -951,19 +944,27 @@ void MainWindow::getSongPicBySongID(QString musicID)
 //通过歌词文件刷新歌词
 void MainWindow::refrashLyric()
 {
-    QFile file("./lyric.txt");
-    QTextStream in(&file);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        while (!in.atEnd())
-        {
-            QString strLineStream = in.readLine();
-            analysisLyricsFile(strLineStream);//解析歌词文件内容
+//    QFile file("./lyric.txt");
+//    QTextStream in(&file);
+//    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+//    {
+//        while (!in.atEnd())
+//        {
+//            QString strLineStream = in.readLine();
+//            analysisLyricsFile(strLineStream);//解析歌词文件内容
 
-//            QCoreApplication::processEvents();
-        }
-        file.close();
+////            QCoreApplication::processEvents();
+//        }
+//        file.close();
+
+//        emit setLyricSig(allLyricMap);
+//    }
+
+    for (auto i : lyricList)
+    {
+        analysisLyricsFile(i);//解析歌词文件内容
     }
+    emit setLyricSig(allLyricMap);
 }
 
 //获取歌曲信息
@@ -1049,7 +1050,7 @@ bool MainWindow::analysisLyricsFile(QString line)
         int totalTime;
         totalTime = match.captured(1).toInt() * 60000 + match.captured(2).toInt() * 1000; //计算该时间点毫秒数
         QString currentText =QString::fromStdString(match.captured(4).toStdString()); //获取歌词文本
-        qDebug() << __LINE__ << currentText << totalTime;
+        qDebug() << __LINE__ << currentText << totalTime << match.captured(1).toInt() << match.captured(2).toInt();
 
         durationTime = totalTime;
         if (player->playlist() == hotSongPlaylist) //热歌榜的歌曲总时间从这里获取

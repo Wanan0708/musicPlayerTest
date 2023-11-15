@@ -37,22 +37,24 @@ void lyricShow::on_pushButton_hide_clicked()
 void lyricShow::slotChangeLyric()
 {
     qDebug() << Q_FUNC_INFO;
-    ui->textEdit_lyric->clear();
-    QFile file("./lyric.txt");
-    QTextStream in(&file);
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        while (!in.atEnd())
-        {
-            QString strLineStream = in.readLine();
-            QStringList listUseLyric = strLineStream.split("]");
-            QString strUseLyric = listUseLyric.last();
-            ui->textEdit_lyric->append(strUseLyric);
-            ui->textEdit_lyric->setAlignment(Qt::AlignCenter);  //水平居中
-        }
-        file.close();
-    }
+//    ui->textEdit_lyric->clear();
+//    QFile file("./lyric.txt");
+//    QTextStream in(&file);
+//    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
+//    {
+//        while (!in.atEnd())
+//        {
+//            QString strLineStream = in.readLine();
+//            QStringList listUseLyric = strLineStream.split("]");
+//            QString strUseLyric = listUseLyric.last();
+//            ui->textEdit_lyric->append(strUseLyric);
+//            ui->textEdit_lyric->setAlignment(Qt::AlignCenter);  //水平居中
+//        }
+//        file.close();
+//    }
 }
+
+
 
 void lyricShow::slotChangeSongImage(QPixmap pixmap)
 {
@@ -75,4 +77,53 @@ void lyricShow::slotModifiedSongInfor(QMap<QString, QString> map)
     ui->label_singerName->setText(map.value("singerName"));
     ui->label_songName->setText(map.value("songName"));
     ui->label_albumName->setText(map.value("songAlbumName"));
+}
+
+void lyricShow::slotGetLyric(QMap<int, QString> map)
+{
+    lyricMap = map;
+    ui->textEdit_lyric->clear();
+    for (auto j : lyricMap.keys())
+    {
+        ui->textEdit_lyric->append(lyricMap.value(j));
+        ui->textEdit_lyric->setAlignment(Qt::AlignCenter);  //水平居中
+    }
+
+//    ui->textEdit_lyric->moveCursor(QTextCursor::Start, QTextCursor::MoveAnchor);
+    cursor = ui->textEdit_lyric->textCursor(); //移动歌词到开始
+    cursor.movePosition(QTextCursor::Start);
+    ui->textEdit_lyric->setTextCursor(cursor);
+}
+
+void lyricShow::slotChangeSingleLyric(int pos)
+{
+    int tmpLoop = 0;
+    for (auto i : lyricMap.keys())
+    {
+        if (i == pos)
+        {
+            break;
+        }
+        tmpLoop++;
+    }
+
+    cursor.movePosition(QTextCursor::Start); //修改进度条之后也可以正常显示
+    ui->textEdit_lyric->setTextCursor(cursor);
+
+    for (int j = 0; j < tmpLoop; ++j)
+    {
+        cursor.movePosition(QTextCursor::Down);
+        cursor.movePosition(QTextCursor::StartOfLine);
+        ui->textEdit_lyric->setTextCursor(cursor);
+    }
+
+}
+
+void lyricShow::slotRepeatPlay()
+{
+    ui->textEdit_lyric->clear();
+    for (int i = 0; i < 6; ++i)
+    {
+        ui->textEdit_lyric->append("\n");
+    }
 }

@@ -20,14 +20,15 @@
    <property name="geometry">
     <rect>
      <x>360</x>
-     <y>25</y>
+     <y>39</y>
      <width>421</width>
-     <height>511</height>
+     <height>491</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">QTextEdit
 {
+	font-family: &quot;Microsoft YaHei&quot;;
     padding: 3px 6px;
     border-radius: 6px;
 	background: #FFFFFF;
@@ -72,6 +73,18 @@ QScrollBar::add-line:vertical
    </property>
    <property name="lineWidth">
     <number>1</number>
+   </property>
+   <property name="verticalScrollBarPolicy">
+    <enum>Qt::ScrollBarAsNeeded</enum>
+   </property>
+   <property name="horizontalScrollBarPolicy">
+    <enum>Qt::ScrollBarAlwaysOff</enum>
+   </property>
+   <property name="lineWrapMode">
+    <enum>QTextEdit::WidgetWidth</enum>
+   </property>
+   <property name="readOnly">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_hide">

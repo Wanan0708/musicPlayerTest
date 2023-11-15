@@ -58,6 +58,9 @@ signals:
     void changeLyric();
     void changeSongImage(QPixmap pixmap);
     void modifiedSongInfor(QMap<QString, QString> map);
+    void setLyricSig(QMap<int, QString>);
+    void changeSingleLyric(int pos);
+    void repeatPlaySig();
 
 private slots:
     void getWeight(int id);
@@ -133,7 +136,8 @@ private:
     bool bHotSongList; //避免重复搜索热歌榜
     QString musicName,singerName,albumName;
     QByteArray searchInfo; //存储接收到的信息
-    QMap<int, QString> allLyricMap; //存储歌词
+    QMap<int, QString> allLyricMap; //存储歌词 <时间，歌词>
+    QStringList lyricList; //未处理过的歌词
 
     QEventLoop loop;
 };
