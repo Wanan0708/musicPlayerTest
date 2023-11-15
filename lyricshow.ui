@@ -6,20 +6,23 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>701</width>
-    <height>441</height>
+    <width>792</width>
+    <height>567</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <widget class="QTextEdit" name="textEdit_lyric">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>360</x>
-     <y>20</y>
-     <width>321</width>
-     <height>401</height>
+     <y>25</y>
+     <width>421</width>
+     <height>511</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -33,20 +36,42 @@
 	line-height: 66px;
 	color: #16181A;
 }
-QTextEdit:hover
+ 
+QScrollBar:vertical
 {
-	border: 0px solid rgba(15, 38, 77, 0.12);
+       border: none;
+       background: transparent;
+       width: 6px;
 }
-QTextEdit:focus
+ 
+QScrollBar::handle:vertical
 {
-	border: 0px solid #2977FF;
-	selection-background-color: #C5D8FF;
-	selection-color: #16181A;
+       background-color: rgba(255,255,255,1);
+       min-height: 30px;
+	  border-radius:3px;
+	  width: 6px;
+   }
+ 
+QScrollBar::add-line:vertical
+{
+       border: none;
+       height: 0px;
+ }
+ 
+ QScrollBar::sub-line:vertical
+{
+       border: none;
+       height: 0px;
 }
-QTextEdit::placeholder 
-{
-    color: #828B99;
+ 
+ QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical
+ {	
+	background:transparent;
+      border-radius:3px;
 }</string>
+   </property>
+   <property name="lineWidth">
+    <number>1</number>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton_hide">
@@ -63,6 +88,122 @@ QTextEdit::placeholder
    </property>
    <property name="text">
     <string>返回</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_songImage">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>90</y>
+     <width>300</width>
+     <height>300</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>420</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>歌曲名：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>445</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>专辑名：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>470</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>歌手名：</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_songName">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>420</y>
+     <width>221</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 15px;
+    color: #BDC8E2;
+}
+</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_albumName">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>445</y>
+     <width>221</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 15px;
+    color: #BDC8E2;
+}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_singerName">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>470</y>
+     <width>221</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+    font-family: &quot;Microsoft YaHei&quot;;
+    font-size: 15px;
+    color: #BDC8E2;
+}</string>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>

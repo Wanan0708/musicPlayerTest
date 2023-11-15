@@ -21,12 +21,15 @@
 #include <QTextBlock>
 #include <QStandardItemModel>
 #include <QThread>
-#include <QMap>
 #include <QList>
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
 #include <QBitmap>
+#include <QtMath>
+#include <QThread>
+#include <QMovie>
+#include <QFile>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 #include "datebase.h"
@@ -44,12 +47,17 @@ public:
     ~MainWindow();
 
     void init();
+    void initControlStylesheet();
     void GetSongLyricBySongId(QString musicId);
-
+    void getSongPicBySongID(QString musicID);
     void refrashLyric();
+    void getSongDetailsBySongID(QString songID);
+    void setControlEnabled(bool bFlag, QPushButton *button);
 
 signals:
     void changeLyric();
+    void changeSongImage(QPixmap pixmap);
+    void modifiedSongInfor(QMap<QString, QString> map);
 
 private slots:
     void getWeight(int id);
@@ -96,21 +104,23 @@ private slots:
 
     void refreshCurrentMusic(int iCurrentRow);
 
+    void on_tableView_hotSongTable_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
-    Ui::lyricShow *lyricWeight;
 
     lyricShow lyric; //歌词界面
 
     QNetworkAccessManager *networkManager;
     QNetworkRequest *networkRequest;
 
-    QStandardItemModel* model;
+    QStandardItemModel* model; //填充搜到的歌曲tableview单元格
+    QStandardItemModel* hotSongModel; //热歌榜model
     QString durationTime; //音乐时长
-    QString positionTime;
     QString imgAddress; //专辑图片地址
     QMediaPlayer *player; //播放器
-    QMediaPlaylist *playlist; //播放列表
+    QMediaPlaylist *searchPlaylist; //搜索页播放列表
+    QMediaPlaylist *hotSongPlaylist; //热歌榜播放列表
     QTextDocument* doc;
     QTextBlock textLine;
     int musicId;//音乐ID
@@ -119,8 +129,12 @@ private:
     int iCurVolume; //当前音量
     int m_offset; //翻页
     bool bMute; //是否静音
+    bool bSearchSongSheet; //避免重复搜索歌单
+    bool bHotSongList; //避免重复搜索热歌榜
     QString musicName,singerName,albumName;
-    QByteArray searchInfo;
+    QByteArray searchInfo; //存储接收到的信息
     QMap<int, QString> allLyricMap; //存储歌词
+
+    QEventLoop loop;
 };
 #endif // MAINWINDOW_H

@@ -10,5 +10,13 @@
         <file>image/newPlay.png</file>
         <file>image/newMute.png</file>
         <file>image/newVolume.png</file>
+        <file>image/search.png</file>
+        <file>image/setting.png</file>
+        <file>image/songSheet.png</file>
+        <file>image/theList.png</file>
+        <file>image/userLogin.png</file>
+        <file>image/dinosaur.png</file>
+        <file>image/loading.gif</file>
+        <file>image/newloading.gif</file>
     </qresource>
 </RCC>

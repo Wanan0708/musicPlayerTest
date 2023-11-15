@@ -69,14 +69,14 @@ QLineEdit:read-only { /* QLineEdit在只读时的状态 */
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>250</y>
+      <y>290</y>
       <width>76</width>
-      <height>51</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton{
-	background-color: rgb(240, 240, 240);                            
+	background-color: rgb(255, 255, 255);                            
     font: 13px &quot;Microsoft YaHei&quot;;                 
     border-radius: 0px;                      
     border: 0px solid rgb(250, 250, 250);      
@@ -85,10 +85,16 @@ QLineEdit:read-only { /* QLineEdit在只读时的状态 */
 
 QPushButton:hover{
     background-color: rgb(230, 230, 230);
+}
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
 }</string>
     </property>
     <property name="text">
-     <string>登录</string>
+     <string/>
     </property>
     <attribute name="buttonGroup">
      <string notr="true">buttonGroup</string>
@@ -153,7 +159,7 @@ border: 0px solid #bbb;
 /*1.滑动过的槽设计参数*/
 QSlider::sub-page:horizontal {
  /*槽颜色*/
-background: rgb(90,49,255);
+background: #00BFFF;
  /*外环区域倒圆角度*/
 border-radius: 2px;
  /*上遮住区域高度*/
@@ -217,9 +223,9 @@ margin-bottom:4px;
    <widget class="QPushButton" name="pushButton_lastSong">
     <property name="geometry">
      <rect>
-      <x>325</x>
+      <x>335</x>
       <y>519</y>
-      <width>51</width>
+      <width>41</width>
       <height>41</height>
      </rect>
     </property>
@@ -227,7 +233,12 @@ margin-bottom:4px;
      <string notr="true">QPushButton { 
 	 border-image: url(&quot;:/new/prefix1/image/lastSong.png&quot;);
 }
-</string>
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
+}</string>
     </property>
     <property name="text">
      <string/>
@@ -245,6 +256,12 @@ margin-bottom:4px;
     <property name="styleSheet">
      <string notr="true">QPushButton {
 border-image: url(&quot;:/new/prefix1/image/newPlay.png&quot;);
+}
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
 }</string>
     </property>
     <property name="text">
@@ -256,13 +273,19 @@ border-image: url(&quot;:/new/prefix1/image/newPlay.png&quot;);
      <rect>
       <x>440</x>
       <y>519</y>
-      <width>51</width>
+      <width>41</width>
       <height>41</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {	 
 	border-image: url(&quot;:/new/prefix1/image/nextSong.png&quot;);
+}
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
 }</string>
     </property>
     <property name="text">
@@ -287,7 +310,7 @@ border: 0px solid #bbb;
 /*1.滑动过的槽设计参数*/
 QSlider::sub-page:horizontal {
  /*槽颜色*/
-background: rgb(90,49,255);
+background: #00BFFF;
  /*外环区域倒圆角度*/
 border-radius: 2px;
  /*上遮住区域高度*/
@@ -416,7 +439,7 @@ margin-bottom:4px;
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView_search">
@@ -503,7 +526,80 @@ QPushButton:hover{
       </property>
      </widget>
     </widget>
-    <widget class="QWidget" name="page_3"/>
+    <widget class="QWidget" name="page_3">
+     <widget class="QTableView" name="tableView_hotSongTable">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>701</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QTableView{
+	color: black;                                       /*表格内文字颜色*/
+	gridline-color: black;                              /*表格内框颜色*/
+    /*表格内背景色*/
+    /*alternate-background-color: rgb(255, 255, 255);*/
+    selection-color: black;                             /*选中区域的文字颜色*/
+    selection-background-color: rgb(240, 240, 240);        /*选中区域的背景色*/
+	border: 0px groove gray;
+	padding: 1px 0px;
+};
+
+QTableView::item:hover {
+    background-color: rgba(200,200,220,255);}        
+
+QTableView::QScrollBar:vertical{
+	background:#02123e;//背景色
+	padding-top:1px;//上预留位置（放置向上箭头）
+	padding-bottom:1px;//下预留位置（放置向下箭头）
+	border:1px solid #083863;//分割线
+	width:5px;
+}
+
+QScrollBar::handle:vertical{ /*滑块样式 */ 
+    background:#dbdbdb;  /*滑块颜色 */ 
+    border-radius:6px;  /*边角圆润 */ 
+    min-height:80px;
+};   /*滑块最小高度  */
+QScrollBar::handle:vertical:hover{/*鼠标触及滑块样式 */ 
+    background:#d0d0d0;
+}; /*滑块颜色  ;  */
+
+</string>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="autoScrollMargin">
+       <number>8</number>
+      </property>
+      <attribute name="verticalHeaderMinimumSectionSize">
+       <number>25</number>
+      </attribute>
+     </widget>
+     <widget class="QLabel" name="label_loading">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>140</y>
+        <width>161</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="page_4">
      <widget class="QLabel" name="label_initialV">
       <property name="geometry">
@@ -527,6 +623,44 @@ QPushButton:hover{
         <height>31</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">QLineEdit {
+	border: 0px solid #A0A0A0; /* 边框宽度为1px，颜色为#A0A0A0 */
+	border-radius: 3px; /* 边框圆角 */
+	padding-left: 5px; /* 文本距离左边界有5px */
+	background-color: rgb(245, 245, 245); /* 背景颜色#F0E5F4 */
+	color: #708090; /* 文本颜色 */
+	selection-background-color: #A0A0A0; /* 选中文本的背景颜色 */
+	selection-color: #F2F2F2; /* 选中文本的颜色 */
+	font-family: &quot;Microsoft YaHei&quot;; /* 文本字体族 */
+	font-size: 10pt; /* 文本字体大小 */
+}
+
+QLineEdit:hover { /* 鼠标悬浮在QLineEdit时的状态 */
+	border: 1px solid #298DFF;
+	border-radius: 3px;
+	background-color: #F2F2F2;
+	color: #298DFF;
+	selection-background-color: #298DFF;
+	selection-color: #F2F2F2;
+}
+
+QLineEdit[echoMode=&quot;2&quot;] { /* QLineEdit有输入掩码时的状态 */
+	lineedit-password-character: 9679;
+	lineedit-password-mask-delay: 2000;
+}
+
+QLineEdit:disabled { /* QLineEdit在禁用时的状态 */
+	border: 1px solid #CDCDCD;
+	background-color: #CDCDCD;
+	color: #B4B4B4;
+}
+
+QLineEdit:read-only { /* QLineEdit在只读时的状态 */
+	background-color: #CDCDCD;
+	color: #F2F2F2;
+}</string>
+      </property>
      </widget>
      <widget class="QPushButton" name="pushButton_saveSetting">
       <property name="geometry">
@@ -549,7 +683,7 @@ QPushButton:hover{
       <x>0</x>
       <y>50</y>
       <width>76</width>
-      <height>51</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -558,16 +692,21 @@ QPushButton:hover{
     font: 13px &quot;Microsoft YaHei&quot;;                 
     border-radius: 0px;                      
     border: 0px solid rgb(250, 250, 250);      
-    border-style:outset;                   
+    border-style:outset;         
 }
 
 QPushButton:hover{
-    background-color: rgb(235, 235, 235);
+    background-color: rgb(230, 230, 230);
 }
-</string>
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
+}</string>
     </property>
     <property name="text">
-     <string>搜索</string>
+     <string/>
     </property>
     <attribute name="buttonGroup">
      <string notr="true">buttonGroup</string>
@@ -577,14 +716,14 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>100</y>
+      <y>110</y>
       <width>76</width>
-      <height>51</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton{
-	background-color: rgb(240, 240, 240);                            
+	background-color: rgb(255, 255, 255);                            
     font: 13px &quot;Microsoft YaHei&quot;;                 
     border-radius: 0px;                      
     border: 0px solid rgb(250, 250, 250);      
@@ -594,10 +733,15 @@ QPushButton:hover{
 QPushButton:hover{
     background-color: rgb(230, 230, 230);
 }
-</string>
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
+}</string>
     </property>
     <property name="text">
-     <string>歌单</string>
+     <string/>
     </property>
     <attribute name="buttonGroup">
      <string notr="true">buttonGroup</string>
@@ -607,14 +751,14 @@ QPushButton:hover{
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>150</y>
-      <width>77</width>
-      <height>51</height>
+      <y>170</y>
+      <width>76</width>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton{
-	background-color: rgb(240, 240, 240);                            
+	background-color: rgb(255, 255, 255);                            
     font: 13px &quot;Microsoft YaHei&quot;;                 
     border-radius: 0px;                      
     border: 0px solid rgb(250, 250, 250);      
@@ -624,27 +768,32 @@ QPushButton:hover{
 QPushButton:hover{
     background-color: rgb(230, 230, 230);
 }
-</string>
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
+}</string>
     </property>
     <property name="text">
-     <string>排行榜</string>
+     <string/>
     </property>
     <attribute name="buttonGroup">
      <string notr="true">buttonGroup</string>
     </attribute>
    </widget>
-   <widget class="QPushButton" name="pushButton_set">
+   <widget class="QPushButton" name="pushButton_setting">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>200</y>
+      <y>230</y>
       <width>76</width>
-      <height>51</height>
+      <height>60</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton{
-	background-color: rgb(240, 240, 240);                            
+	background-color: rgb(255, 255, 255);                            
     font: 13px &quot;Microsoft YaHei&quot;;                 
     border-radius: 0px;                      
     border: 0px solid rgb(250, 250, 250);      
@@ -653,10 +802,16 @@ QPushButton:hover{
 
 QPushButton:hover{
     background-color: rgb(230, 230, 230);
+}
+
+QPushButton:pressed
+{
+	padding-left:3px;
+	padding-top:3px;
 }</string>
     </property>
     <property name="text">
-     <string>设置</string>
+     <string/>
     </property>
     <attribute name="buttonGroup">
      <string notr="true">buttonGroup</string>
@@ -683,9 +838,9 @@ QPushButton:hover{
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>12</x>
+      <x>18</x>
       <y>5</y>
-      <width>61</width>
+      <width>51</width>
       <height>41</height>
      </rect>
     </property>
@@ -707,13 +862,16 @@ QPushButton:hover{
       <height>61</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string>歌曲详情页</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">QPushuButton{
 	border-radius:5;
 }</string>
     </property>
     <property name="text">
-     <string>专辑图片</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -753,6 +911,9 @@ QPushButton:hover{
       <width>791</width>
       <height>10</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>

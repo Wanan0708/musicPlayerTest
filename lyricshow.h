@@ -5,6 +5,8 @@
 #include <QFile>
 #include <QDebug>
 #include <QDateTime>
+#include <QBitmap>
+#include <QPainter>
 
 namespace Ui {
 class lyricShow;
@@ -23,6 +25,8 @@ signals:
 
 public slots:
     void slotChangeLyric();
+    void slotChangeSongImage(QPixmap pixmap);
+    void slotModifiedSongInfor(QMap<QString, QString> map);
 
 private slots:
     void on_pushButton_hide_clicked();
