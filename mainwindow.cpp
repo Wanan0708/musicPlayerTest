@@ -48,6 +48,15 @@ void MainWindow::init()
     hotSongPlaylist->setPlaybackMode(QMediaPlaylist::CurrentItemOnce); //歌曲循环模式
     connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::slotSongSliderPosChanged);
 
+    videoPlayer = new QMediaPlayer();
+    videoPlaylist = new QMediaPlaylist();
+    videoWidget = new QVideoWidget();
+    mvWidget = new mvShow();
+//    mvWidget->resize(960, 720);
+    videoPlayer->setVideoOutput(mvWidget);
+    mvWidget->setAutoFillBackground(true);
+    connect(mvWidget, &mvShow::stopPlsySig, videoPlayer, &QMediaPlayer::stop);
+
     //读取数据库内容并填充
     if (!Datebase::instance()->createDB())
     {
@@ -69,6 +78,14 @@ void MainWindow::init()
     ui->horizontalSlider_songSlider->setMaximum(0);
     ui->horizontalSlider_volumeSlider->setMaximum(100);
     ui->horizontalSlider_volumeSlider->setValue(iVolume);
+
+    ui->tableView_search->setContextMenuPolicy(Qt::CustomContextMenu); //可弹出右键菜单
+    popMenu = new QMenu(ui->tableView_search);
+    playMVAction = new QAction();
+    playMVAction->setText("播放MV");
+    popMenu->addAction(playMVAction);
+    connect(ui->tableView_search, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotDealMenu(QPoint)));
+    connect(playMVAction, &QAction::triggered, this, &MainWindow::slotPlayMV);
 
     ui->stackedWidget->setCurrentIndex(0);
 
@@ -268,13 +285,15 @@ void MainWindow::getWeight(int id)
     ui->stackedWidget->setCurrentIndex(id);
     if (1 == id) //歌单
     {
-//        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
+        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
 //        QString str = QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=李荣浩&type=1&offset=0&total=true&limit=8");
 //        QString str = "http://api.yimian.xyz/msc/?type=single&id=29764564";
 //        QString str = "http://api.yimian.xyz/msc/?type=cover&id=109951165182029540";
 //        QString str = "http://p3.music.126.net/0uZ_bKtm4E188Uk9LFN1qg==/109951163187393370.jpg?param=300y300";
 //        str = "http://api.wer.plus/api/wytop?t=1";
-        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184";
+//        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184";
+//        QString str = "http://music.163.com/api/mv/detail?id=365345&type=mp4";
+//        QString str = "http://vodkgeyttp8.vod.126.net/cloudmusic/ISAwICIgYTQ2JGAwIDEgJA==/mv/365345/2fa412ec6b86f30f76e48e32cec1d86f.mp4?wsSecret=4c4d5f2af09c1bbae606d17c4fdbbbef&wsTime=1700054846";
 
         networkRequest->setUrl(QUrl(str));
         networkManager->get(*networkRequest);
@@ -293,7 +312,12 @@ void MainWindow::getWeight(int id)
     }
     else if(4 == id)
     {
-
+//        QString url; //播放mv
+//        url=QString("http://vodkgeyttp8.vod.126.net/cloudmusic/ISAwICIgYTQ2JGAwIDEgJA==/mv/365345/2fa412ec6b86f30f76e48e32cec1d86f.mp4?wsSecret=4c4d5f2af09c1bbae606d17c4fdbbbef&wsTime=1700054846");
+//        videoPlaylist->addMedia(QUrl(url)); //添加返回的音乐到播放列表中
+//        videoPlayer->setPlaylist(videoPlaylist);
+//        videoPlayer->play();
+//        videoWidget->show();
     }
 }
 
@@ -416,6 +440,7 @@ void MainWindow::databack(QNetworkReply *reply)
                 qDebug() << "musicDuration: " << musicDuration;
                 qDebug() << "albumName: " << albumName;
                 qDebug() << "imgAddress: " << imgAddress;
+                qDebug() << "mvId: " << mvId;
 
                 model->setItem(k,0, new QStandardItem(QString::number(k+1)));
                 model->setItem(k,1,new QStandardItem(musicName)); //音乐名称
@@ -425,6 +450,7 @@ void MainWindow::databack(QNetworkReply *reply)
                 model->setItem(k,4,new QStandardItem(time)); //歌曲时长
                 model->setItem(k,5,new QStandardItem(QString::number(musicId))); //歌曲ID
                 model->setItem(k,6,new QStandardItem(imgAddress)); //歌曲图片路径
+                model->setItem(k,7,new QStandardItem(QString::number(mvId))); //MVID
 
                 model->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
                 model->item(k,2)->setToolTip(singerName);
@@ -449,8 +475,10 @@ void MainWindow::databack(QNetworkReply *reply)
             ui->tableView_search->setColumnWidth(4, 120);
             ui->tableView_search->setColumnWidth(5, 0);
             ui->tableView_search->setColumnWidth(6, 0);
+            ui->tableView_search->setColumnWidth(7, 0);
             ui->tableView_search->hideColumn(5);
             ui->tableView_search->hideColumn(6);
+            ui->tableView_search->hideColumn(7);
             ui->tableView_search->setModel(model);
         }
     }
@@ -588,6 +616,35 @@ void MainWindow::databack(QNetworkReply *reply)
                 loop.quit();
                 return;
             }
+        }
+    }
+    else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //拿MV播放地址
+    {
+        QJsonObject dataObject = totalObject["data"].toObject();
+        QStringList dataKeyList = dataObject.keys();
+        if (dataKeyList.contains("brs"))
+        {
+            QJsonObject brsObject = dataObject["brs"].toObject();
+            QStringList brsKeyList = brsObject.keys();
+            brsKeyList.sort();
+            qDebug() << __LINE__ <<brsObject["240"].toString();
+            qDebug() << __LINE__ <<brsObject["480"].toString();
+            qDebug() << __LINE__ <<brsObject["720"].toString();
+
+            QString mvRatio = brsObject[brsKeyList.last()].toString();
+            qDebug() << __LINE__ << mvRatio << brsKeyList << (mvWidget == nullptr);
+
+//            if (mvWidget == nullptr)
+//            {
+//                mvWidget = new mvShow();
+//                videoPlayer->setVideoOutput(mvWidget);
+//                mvWidget->setAutoFillBackground(true);
+//            }
+            videoPlaylist->clear(); //播放列表只需要一个mv
+            videoPlaylist->addMedia(QUrl(mvRatio)); //添加返回的音乐到播放列表中
+            videoPlayer->setPlaylist(videoPlaylist);
+            videoPlayer->play();
+            mvWidget->show();
         }
     }
 }
@@ -1282,6 +1339,35 @@ void MainWindow::on_tableView_hotSongTable_doubleClicked(const QModelIndex &inde
     }
     qDebug() << __LINE__ << strMusicImg;
     networkRequest->setUrl(QUrl(strMusicImg)); //获取专辑图片
+    networkManager->get(*networkRequest);
+}
+
+void MainWindow::slotDealMenu(QPoint point)
+{
+    QModelIndex index = ui->tableView_search->indexAt(point);
+    if (index.isValid())
+    {
+        popMenu->exec(QCursor::pos()); // 菜单出现的位置为当前鼠标的位置
+    }
+    qDebug() << __LINE__ << index;
+}
+
+void MainWindow::slotPlayMV()
+{
+    QModelIndex lastIndex = ui->tableView_search->currentIndex();
+    int row = lastIndex.row();//获得当前行索引
+    if (row < 0 || row > 12)
+    {
+        return;
+    }
+
+    QModelIndex MVIDIndex = model->index(row,7);  // 第7列是MVID
+    QString strMVID = model->data(MVIDIndex).toString();//获取索引对应位置的数据转为字符串
+    qDebug() << __LINE__ << row << MVIDIndex << strMVID;
+
+    QString strUrl = QString("http://music.163.com/api/mv/detail?id=%1&type=mp4").arg(strMVID);
+
+    networkRequest->setUrl(QUrl(strUrl));
     networkManager->get(*networkRequest);
 }
 

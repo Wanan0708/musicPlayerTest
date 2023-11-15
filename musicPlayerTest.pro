@@ -1,4 +1,4 @@
-QT       += core gui multimedia network sql
+QT       += core gui multimedia network sql multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,16 +12,19 @@ SOURCES += \
     datebase.cpp \
     lyricshow.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    mvshow.cpp
 
 HEADERS += \
     datebase.h \
     lyricshow.h \
-    mainwindow.h
+    mainwindow.h \
+    mvshow.h
 
 FORMS += \
     lyricshow.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    mvshow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

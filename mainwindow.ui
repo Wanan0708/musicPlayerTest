@@ -439,7 +439,7 @@ margin-bottom:4px;
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView_search">
@@ -673,6 +673,18 @@ QLineEdit:read-only { /* QLineEdit在只读时的状态 */
       </property>
       <property name="text">
        <string>保存</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_5">
+     <widget class="QVideoWidget" name="widget_movie" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>681</width>
+        <height>421</height>
+       </rect>
       </property>
      </widget>
     </widget>
@@ -934,6 +946,14 @@ QPushButton:pressed
    </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QVideoWidget</class>
+   <extends>QWidget</extends>
+   <header>qvideowidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
  <buttongroups>

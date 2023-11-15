@@ -30,9 +30,14 @@
 #include <QThread>
 #include <QMovie>
 #include <QFile>
+#include <QVideoWindowControl>
+#include <QVideoWidget>
+#include <QMenu>
+#include <QAction>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 #include "datebase.h"
+#include "mvshow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -109,10 +114,15 @@ private slots:
 
     void on_tableView_hotSongTable_doubleClicked(const QModelIndex &index);
 
+    void slotDealMenu(QPoint point);
+
+    void slotPlayMV();
+
 private:
     Ui::MainWindow *ui;
 
     lyricShow lyric; //歌词界面
+    mvShow *mvWidget;
 
     QNetworkAccessManager *networkManager;
     QNetworkRequest *networkRequest;
@@ -121,7 +131,7 @@ private:
     QStandardItemModel* hotSongModel; //热歌榜model
     QString durationTime; //音乐时长
     QString imgAddress; //专辑图片地址
-    QMediaPlayer *player; //播放器
+    QMediaPlayer *player; //播放音乐
     QMediaPlaylist *searchPlaylist; //搜索页播放列表
     QMediaPlaylist *hotSongPlaylist; //热歌榜播放列表
     QTextDocument* doc;
@@ -138,6 +148,13 @@ private:
     QByteArray searchInfo; //存储接收到的信息
     QMap<int, QString> allLyricMap; //存储歌词 <时间，歌词>
     QStringList lyricList; //未处理过的歌词
+
+    QMenu *popMenu; //搜索界面右键菜单
+    QAction *playMVAction; //菜单选项
+
+    QMediaPlayer *videoPlayer; //播放mv
+    QMediaPlaylist *videoPlaylist; //mv播放列表
+    QVideoWidget *videoWidget; //播放mv窗口
 
     QEventLoop loop;
 };
