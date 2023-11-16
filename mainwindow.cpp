@@ -32,6 +32,12 @@ MainWindow::~MainWindow()
     delete ui;
     delete player;
     delete searchPlaylist;
+    delete hotSongModel;
+    delete hotSongPlaylist;
+    delete videoPlayer;
+    delete videoPlaylist;
+    delete popMenu;
+    delete playMVAction;
 }
 
 void MainWindow::init()
@@ -50,12 +56,25 @@ void MainWindow::init()
 
     videoPlayer = new QMediaPlayer();
     videoPlaylist = new QMediaPlaylist();
-    videoWidget = new QVideoWidget();
     mvWidget = new mvShow();
-//    mvWidget->resize(960, 720);
     videoPlayer->setVideoOutput(mvWidget);
     mvWidget->setAutoFillBackground(true);
-    connect(mvWidget, &mvShow::stopPlsySig, videoPlayer, &QMediaPlayer::stop);
+    connect(mvWidget, &mvShow::stopPlaySig, videoPlayer, [=]() {
+        videoPlayer->stop();
+        this->show();
+    });
+
+    connect(mvWidget, &mvShow::clickToPlayPause, videoPlayer, [=]()
+    {
+        if (videoPlayer->state() == QMediaPlayer::PlayingState)
+        {
+            videoPlayer->pause();
+        }
+        else if (videoPlayer->state() == QMediaPlayer::PausedState)
+        {
+            videoPlayer->play();
+        }
+    });
 
     //读取数据库内容并填充
     if (!Datebase::instance()->createDB())
@@ -122,14 +141,21 @@ void MainWindow::init()
         player->stop();
     });
 
+    connect(videoPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), this,
+            [=](QMediaPlayer::Error error)
+    {
+        qDebug () << "playError: " << error;
+        videoPlayer->stop();
+    });
+
 //    connect(searchPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
     connect(hotSongPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
 
     connect(this, &MainWindow::changeLyric, &lyric, &lyricShow::slotChangeLyric); //切换歌曲后歌词也切换
     connect(this, &MainWindow::changeSongImage, &lyric, &lyricShow::slotChangeSongImage); //切换歌曲后图片也切换
     connect(this, &MainWindow::modifiedSongInfor, &lyric, &lyricShow::slotModifiedSongInfor);
-    connect(this, &MainWindow::setLyricSig, &lyric, &lyricShow::slotGetLyric);
-    connect(this, &MainWindow::changeSingleLyric, &lyric, &lyricShow::slotChangeSingleLyric);
+    connect(this, &MainWindow::setLyricSig, &lyric, &lyricShow::slotGetLyric); //重新设置歌词
+    connect(this, &MainWindow::changeSingleLyric, &lyric, &lyricShow::slotChangeSingleLyric); //修改单据歌词显示位置
 }
 
 //初始化部分样式
@@ -618,33 +644,43 @@ void MainWindow::databack(QNetworkReply *reply)
             }
         }
     }
-    else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //拿MV播放地址
+    else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //MV播放
     {
         QJsonObject dataObject = totalObject["data"].toObject();
         QStringList dataKeyList = dataObject.keys();
+        QString songName = dataObject["name"].toString(); //歌曲名
+        QString singerName = dataObject["artistName"].toString(); //歌手名
         if (dataKeyList.contains("brs"))
         {
             QJsonObject brsObject = dataObject["brs"].toObject();
             QStringList brsKeyList = brsObject.keys();
-            brsKeyList.sort();
+            QList<int> iKeyList; //保存最大分辨率
+            for (const auto &i : qAsConst(brsKeyList))
+            {
+                iKeyList.append(i.toInt());
+            }
+            qSort(iKeyList.begin(), iKeyList.end());
+//            brsKeyList.sort();
             qDebug() << __LINE__ <<brsObject["240"].toString();
             qDebug() << __LINE__ <<brsObject["480"].toString();
-            qDebug() << __LINE__ <<brsObject["720"].toString();
+            qDebug() << __LINE__ <<brsObject["720"].toString() << iKeyList;
 
-            QString mvRatio = brsObject[brsKeyList.last()].toString();
+            QString mvRatio = brsObject[QString::number(iKeyList.last())].toString();
             qDebug() << __LINE__ << mvRatio << brsKeyList << (mvWidget == nullptr);
 
-//            if (mvWidget == nullptr)
-//            {
-//                mvWidget = new mvShow();
-//                videoPlayer->setVideoOutput(mvWidget);
-//                mvWidget->setAutoFillBackground(true);
-//            }
+            player->pause(); //播放mv时暂停播放音乐
+            ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+            ui->pushButton_playPause->setToolTip("播放");
+
             videoPlaylist->clear(); //播放列表只需要一个mv
             videoPlaylist->addMedia(QUrl(mvRatio)); //添加返回的音乐到播放列表中
             videoPlayer->setPlaylist(videoPlaylist);
             videoPlayer->play();
+            mvWidget->resize(720, 480);
+            mvWidget->setWindowTitle(songName + " - " + singerName + " - " + QString::number(iKeyList.last()) + "p");
+            mvWidget->setAutoFillBackground(true);
             mvWidget->show();
+            this->hide();
         }
     }
 }
@@ -1207,19 +1243,13 @@ void MainWindow::refreshCurrentMusic(int iCurrentRow)
         {
             ui->tableView_hotSongTable->selectRow(row);
             disconnect(hotSongPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
-//            hotSongPlaylist->blockSignals(true);
+//            hotSongPlaylist->blockSignals(true); //未生效，暂不清楚原因
 //            QSignalBlocker blocker(hotSongPlaylist); //临时屏蔽列表信号
             hotSongPlaylist->setCurrentIndex(row);
 //            hotSongPlaylist->blockSignals(false);
             connect(hotSongPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
             return;
         }
-
-//        QModelIndex tmpIndex = ui->tableView_hotSongTable->model()->index(iCurrentRow, 0, QModelIndex());
-//        ui->tableView_hotSongTable->setCurrentIndex(tmpIndex); //点击后切换行
-//        ui->tableView_hotSongTable->selectRow(row);
-//        ui->tableView_hotSongTable->setCurrentIndex(curIndex); //点击后切换行
-//        ui->tableView_hotSongTable->selectRow(iCurrentRow); //,选中列
 
         QModelIndex indexID = hotSongModel->index(iCurrentRow,5);  // 第5列是musicID
         QString strMusicID = hotSongModel->data(indexID).toString();//获取索引对应位置的数据转为字符串
@@ -1342,6 +1372,7 @@ void MainWindow::on_tableView_hotSongTable_doubleClicked(const QModelIndex &inde
     networkManager->get(*networkRequest);
 }
 
+//显示右键菜单
 void MainWindow::slotDealMenu(QPoint point)
 {
     QModelIndex index = ui->tableView_search->indexAt(point);
@@ -1352,6 +1383,7 @@ void MainWindow::slotDealMenu(QPoint point)
     qDebug() << __LINE__ << index;
 }
 
+//播放mv
 void MainWindow::slotPlayMV()
 {
     QModelIndex lastIndex = ui->tableView_search->currentIndex();
@@ -1365,9 +1397,26 @@ void MainWindow::slotPlayMV()
     QString strMVID = model->data(MVIDIndex).toString();//获取索引对应位置的数据转为字符串
     qDebug() << __LINE__ << row << MVIDIndex << strMVID;
 
-    QString strUrl = QString("http://music.163.com/api/mv/detail?id=%1&type=mp4").arg(strMVID);
+    if (strMVID.toInt() != 0)
+    {
+        QString strUrl = QString("http://music.163.com/api/mv/detail?id=%1&type=mp4").arg(strMVID);
 
-    networkRequest->setUrl(QUrl(strUrl));
-    networkManager->get(*networkRequest);
+        networkRequest->setUrl(QUrl(strUrl));
+        networkManager->get(*networkRequest);
+        if (ui->label_songName->text() == "未获取到MV")
+        {
+            ui->label_songName->clear();
+        }
+
+    }
+    else
+    {
+        ui->label_songName->setText("未获取到MV");
+        ui->label_lyric->clear();
+    }
+
+    player->pause();
+    ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+    ui->pushButton_playPause->setToolTip("播放");
 }
 
