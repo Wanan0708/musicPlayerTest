@@ -8,6 +8,7 @@
 #include <QIcon>
 #include <QDebug>
 #include <QShortcut>
+#include <QMouseEvent>
 
 namespace Ui {
 class mvShow;

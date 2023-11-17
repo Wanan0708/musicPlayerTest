@@ -34,6 +34,8 @@ bool Datebase::createDB()
 
     if(query.exec(strSql))
     {
+        QString insertSql = "insert into setting(id,volume) VALUES('1','45');";
+        query.exec(insertSql);
         return true;
     }
     qDebug() << query.lastError();

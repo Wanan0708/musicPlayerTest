@@ -151,7 +151,7 @@ void MainWindow::init()
 //    connect(searchPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
     connect(hotSongPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
 
-    connect(this, &MainWindow::changeLyric, &lyric, &lyricShow::slotChangeLyric); //切换歌曲后歌词也切换
+//    connect(this, &MainWindow::changeLyric, &lyric, &lyricShow::slotChangeLyric); //切换歌曲后歌词也切换
     connect(this, &MainWindow::changeSongImage, &lyric, &lyricShow::slotChangeSongImage); //切换歌曲后图片也切换
     connect(this, &MainWindow::modifiedSongInfor, &lyric, &lyricShow::slotModifiedSongInfor);
     connect(this, &MainWindow::setLyricSig, &lyric, &lyricShow::slotGetLyric); //重新设置歌词
@@ -311,14 +311,15 @@ void MainWindow::getWeight(int id)
     ui->stackedWidget->setCurrentIndex(id);
     if (1 == id) //歌单
     {
-        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
+//        QString str = QString("http://music.163.com/api/playlist/detail?id=3779629");
 //        QString str = QString("http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s=李荣浩&type=1&offset=0&total=true&limit=8");
 //        QString str = "http://api.yimian.xyz/msc/?type=single&id=29764564";
 //        QString str = "http://api.yimian.xyz/msc/?type=cover&id=109951165182029540";
 //        QString str = "http://p3.music.126.net/0uZ_bKtm4E188Uk9LFN1qg==/109951163187393370.jpg?param=300y300";
 //        str = "http://api.wer.plus/api/wytop?t=1";
-//        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184";
-//        QString str = "http://music.163.com/api/mv/detail?id=365345&type=mp4";
+//        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184"; //可用  每日推荐歌单
+        QString str = QString("http://music.163.com/api/playlist/detail?id=2557908184"); //不稳定
+//        QString str = "http://music.163.com/api/mv/detail?id=365345&type=mp4"; //获取mv播放地址
 //        QString str = "http://vodkgeyttp8.vod.126.net/cloudmusic/ISAwICIgYTQ2JGAwIDEgJA==/mv/365345/2fa412ec6b86f30f76e48e32cec1d86f.mp4?wsSecret=4c4d5f2af09c1bbae606d17c4fdbbbef&wsTime=1700054846";
 
         networkRequest->setUrl(QUrl(str));
@@ -326,9 +327,11 @@ void MainWindow::getWeight(int id)
     }
     else if (2 == id && !bHotSongList) //热歌榜
     {
-        setControlEnabled(false, ui->pushButton_rankList);
+//        setControlEnabled(false, ui->pushButton_rankList);
         bHotSongList = true;
-        str = "http://api.wer.plus/api/wytop?t=4"; //t=1:原创榜,2:新歌榜,3:飙升榜,4:热歌榜
+//        str = "http://api.wer.plus/api/wytop?t=4"; //t=1:原创榜,2:新歌榜,3:飙升榜,4:热歌榜 //http://music.163.com/api/playlist/detail?id=3778678用此api信息更详细、
+//        str = "http://music.163.com/api/playlist/detail?id=3778678";
+        str = "http://api.yimian.xyz/msc/?type=playlist&id=3778678";
         networkRequest->setUrl(QUrl(str));
         networkManager->get(*networkRequest);
     }
@@ -406,182 +409,55 @@ void MainWindow::databack(QNetworkReply *reply)
         qDebug() <<"搜索歌曲Json获取格式错误"<< err.errorString();
         return;
     }
-    QJsonObject totalObject = json_recv.object();
-    qDebug() << __LINE__ << json_recv;
-    QStringList keys = totalObject.keys();    // 列出json里所有的key
-    if(keys.contains("result"))                 //如果有结果
+    if (json_recv.isArray()) //热歌榜 接收到的数据为QJsonArray
     {
-        //在 json 文本中 {}花括号里面是QJsonObject对象, []方括号里面是QJsonArray
-        QJsonObject resultObject = totalObject["result"].toObject();     //就将带 result 的内容提取后转换为对象
-        QStringList resultKeys = resultObject.keys();      //保存所有key
-//        qDebug() << __LINE__ << resultKeys;
-        if(resultKeys.contains("songs"))                    //如果 key 为songs ,代表找到了歌曲
-        {
-            ui->pushButton_lastPage->setVisible(true);
-            ui->pushButton_nextPage->setVisible(true); //搜到歌曲后允许上下翻页
-            int k = 0;
-            QJsonArray array = resultObject["songs"].toArray();
-            for(const auto &i : qAsConst(array))                   //开始获取歌曲中的信息
-            {
-                QJsonObject object = i.toObject();
-                musicId = object["id"].toInt();                         // 音乐id
-                musicDuration = object["duration"].toInt();             // 音乐长度
-                qDebug() << "musicDuration: " << musicDuration;
-                musicName = object["name"].toString();                  // 音乐名
-                mvId = object["mvid"].toInt();                          // mvid
-                QStringList artistsKeys = object.keys();
-                qDebug() << "artistsKeys: " << artistsKeys;
-                if(artistsKeys.contains("artists"))                //如果result中包含了 artists
-                {
-                    QJsonArray artistsArray = object["artists"].toArray();   //将 artist 的内容提取后保存
-                    for(const auto &j : qAsConst(artistsArray))
-                    {
-                        QJsonObject object2 = j.toObject();
-                        singerName = object2["name"].toString();         // 歌手名
-                        imgAddress = object2["img1v1Url"].toString(); //专辑图片路径
-                        qDebug() << __LINE__ << object2.keys() << imgAddress;
-                    }
-                }
-                if(artistsKeys.contains("album"))                //包含了专辑
-                {
-                    QJsonObject albumObjct = object["album"].toObject();
-                    albumName = albumObjct["name"].toString();            // 专辑名
-                    QStringList artistList = albumObjct.keys();
-                    if(artistList.contains("artist"))
-                    {
-                        QJsonArray artistArray = albumObjct["artist"].toArray();
-                        qDebug() << __LINE__ << artistList << artistArray;
-                        for (const auto &j : qAsConst(artistArray))
-                        {
-                            QJsonObject tmpObj = j.toObject();
-                            imgAddress = tmpObj["img1v1Url"].toString(); //第二种方式拿专辑图片路径
-                            qDebug() << __LINE__ << "imgAddress: " << imgAddress;
-                        }
-                    }
-                }
-
-                qDebug() << "musicId: " << musicId;
-                qDebug() << "musicName: " << musicName;
-                qDebug() << "singerName: " << singerName;
-                qDebug() << "musicDuration: " << musicDuration;
-                qDebug() << "albumName: " << albumName;
-                qDebug() << "imgAddress: " << imgAddress;
-                qDebug() << "mvId: " << mvId;
-
-                model->setItem(k,0, new QStandardItem(QString::number(k+1)));
-                model->setItem(k,1,new QStandardItem(musicName)); //音乐名称
-                model->setItem(k,2,new QStandardItem(singerName)); //歌手名
-                model->setItem(k,3,new QStandardItem(albumName)); //专辑名
-                QString time = QString("%1:%2").arg(musicDuration/1000/60, 2, 10, QLatin1Char('0')).arg(musicDuration/1000%60, 2, 10, QLatin1Char('0'));
-                model->setItem(k,4,new QStandardItem(time)); //歌曲时长
-                model->setItem(k,5,new QStandardItem(QString::number(musicId))); //歌曲ID
-                model->setItem(k,6,new QStandardItem(imgAddress)); //歌曲图片路径
-                model->setItem(k,7,new QStandardItem(QString::number(mvId))); //MVID
-
-                model->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
-                model->item(k,2)->setToolTip(singerName);
-                model->item(k,3)->setToolTip(albumName);
-                model->item(k,4)->setToolTip(time);
-                model->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-                model->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-                model->item(k,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-                model->item(k,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-                model->item(k,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-                qDebug() << "time: " << time << "k: " << k;
-                k++;
-
-                QString url;
-                url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicId);
-                searchPlaylist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
-            }
-            ui->tableView_search->setColumnWidth(0, 10);
-            ui->tableView_search->setColumnWidth(1, 230);
-            ui->tableView_search->setColumnWidth(2, 150);
-            ui->tableView_search->setColumnWidth(3, 176);
-            ui->tableView_search->setColumnWidth(4, 120);
-            ui->tableView_search->setColumnWidth(5, 0);
-            ui->tableView_search->setColumnWidth(6, 0);
-            ui->tableView_search->setColumnWidth(7, 0);
-            ui->tableView_search->hideColumn(5);
-            ui->tableView_search->hideColumn(6);
-            ui->tableView_search->hideColumn(7);
-            ui->tableView_search->setModel(model);
-        }
-    }
-    else if(keys.contains("lrc")) //处理歌词
-    {
-        QJsonObject lrcObject = totalObject["lrc"].toObject();     //就将带 msg 的内容提取后转换为对象
-        QStringList resultKeys = lrcObject.keys();      //保存所有key
-        qDebug() << __LINE__ << resultKeys;
-        if (resultKeys.contains("lyric"))
-        {
-            allLyricMap.clear();
-
-            QString strLyric = lrcObject["lyric"].toString();
-            lyricList = strLyric.split("\n");
-
-//            QFile file("./lyric.txt"); //也可以使用文件保存歌词
-//            file.remove();
-//            if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
-//            {
-//                QTextStream stream(&file);
-//                stream.seek(file.size());
-//                for (auto& i : lyricList)
-//                {
-//                    QString strLineLyric;
-//                    strLineLyric.append(i);
-//                    stream << strLineLyric << "\n";
-
-////                    QCoreApplication::processEvents();
-//                }
-//                file.close();
-
-////                emit changeLyric();
-//            }
-            refrashLyric(); //获得新歌词后刷新歌词
-        }
-    }
-    else if(keys.contains("msg")) //处理歌单(未完成)
-    {
-        QJsonObject msgObject = totalObject["msg"].toObject();     //就将带 msg 的内容提取后转换为对象
-        QStringList msgKeys = msgObject.keys();      //保存所有key
-        qDebug() << __LINE__ << msgKeys;
-    }
-    if(keys.contains("data") && keys.count() == 3)  //热歌榜
-    {
+        QJsonArray jsonArray = json_recv.array();
+        qDebug() << __LINE__ << jsonArray.count();
         int k = 0;
-        QJsonArray hotSongArray = json_recv["data"].toArray();
-        qDebug() << __LINE__ << hotSongArray;
-        for (const auto &i : qAsConst(hotSongArray))
+        for (const auto &i : qAsConst(jsonArray))
         {
-            QJsonObject object = i.toObject();
-            QString musicName = object["name"].toString();
-            QString musicMid = object["mid"].toString();
-            QString musicPlayAddress = object["play"].toString();
+            QJsonObject jsonObject = i.toObject();
+            int musicId = jsonObject["id"].toInt();
+            QString musicName = jsonObject["name"].toString();
+            QString singerName = jsonObject["artist"].toString();
+            QString albumName = jsonObject["album"].toString();
+            QString playAddress = jsonObject["url"].toString();
+            QString imageAddress = jsonObject["cover"].toString();
+            QString lyricAddress = jsonObject["lrc"].toString();
 
             qDebug() << "hotmusicName: " << musicName;
-            qDebug() << "hotmusicMid: " << musicMid;
-            qDebug() << "hotmusicPlayAddress: " << musicPlayAddress;
+            qDebug() << "hotmusicid: " << musicId;
+            qDebug() << "hotsingerName: " << singerName;
+            qDebug() << "hotalbumName: " << albumName;
+            qDebug() << "hotplayAddress: " << playAddress;
+            qDebug() << "hotimageAddress: " << imageAddress;
+            qDebug() << "hotlyricAddress: " << lyricAddress << "\n";
 
             hotSongModel->setItem(k,0, new QStandardItem(QString::number(k+1)));
             hotSongModel->setItem(k,1,new QStandardItem(musicName)); //音乐名称
-            hotSongModel->setItem(k,5,new QStandardItem(musicMid)); //音乐ID
-            hotSongModel->setItem(k,6,new QStandardItem(musicPlayAddress)); //歌曲播放地址
+            hotSongModel->setItem(k,2,new QStandardItem(singerName)); //歌手名
+            hotSongModel->setItem(k,3,new QStandardItem(albumName)); //专辑名
+            hotSongModel->setItem(k,4,new QStandardItem("undefined")); //时长
+            hotSongModel->setItem(k,5,new QStandardItem(QString::number(musicId))); //音乐ID
+            hotSongModel->setItem(k,6,new QStandardItem(imageAddress)); //歌曲播放地址
             hotSongModel->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
+            hotSongModel->item(k,2)->setToolTip(singerName); //鼠标悬停时显示信息
+            hotSongModel->item(k,3)->setToolTip(albumName); //鼠标悬停时显示信息
+            hotSongModel->item(k,4)->setToolTip("undefined"); //鼠标悬停时显示信息
 
             hotSongModel->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
             hotSongModel->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+            hotSongModel->item(k,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+            hotSongModel->item(k,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+            hotSongModel->item(k,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 
             ++k;
 
-            getSongDetailsBySongID(musicMid);
-            loop.exec(QEventLoop::ExcludeUserInputEvents);
-            QApplication::processEvents(QEventLoop::AllEvents, 10);//防止阻塞界面
-
-            QString url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicMid);
+            QString url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicId);
             hotSongPlaylist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
         }
-        player->setPlaylist(hotSongPlaylist);
+        ui->label_loading->hide();
+        setControlEnabled(true, ui->pushButton_rankList);
 
         ui->tableView_hotSongTable->setColumnWidth(0, 30);
         ui->tableView_hotSongTable->setColumnWidth(1, 230);
@@ -591,96 +467,385 @@ void MainWindow::databack(QNetworkReply *reply)
         ui->tableView_hotSongTable->hideColumn(5);
         ui->tableView_hotSongTable->hideColumn(6);
         ui->tableView_hotSongTable->setModel(hotSongModel);
+
+        return;
     }
-    if(keys.contains("cover") && keys.contains("album") && keys.count() == 7) //处理歌曲信息详情
+    else
     {
-//        QString strPicWebsite = json_recv["cover"].toString();
-//        qDebug() << __LINE__ << strPicWebsite;
-//        if (strPicWebsite.contains("https"))
-//        {
-//            strPicWebsite = "http" + strPicWebsite.mid(5, -1);
-//        }
-//        qDebug() << __LINE__ << strPicWebsite;
-//        networkRequest->setUrl(QUrl(strPicWebsite));
-//        networkManager->get(*networkRequest);
-        if (ui->stackedWidget->currentIndex() == 2)
+        QJsonObject totalObject = json_recv.object();
+        qDebug() << __LINE__ << json_recv;
+        QStringList keys = totalObject.keys();    // 列出json里所有的key
+        if(keys.contains("result"))                 //如果有结果
         {
-            static int n = 0; //填充第几行
-            QString singerName = totalObject["artist"].toString();
-            QString musicAlbum = totalObject["album"].toString();
-            QString musicCoverAddress = totalObject["cover"].toString();
-
-            qDebug() << "singerName: " << singerName;
-            qDebug() << "musicAlbum: " << musicAlbum;
-            qDebug() << "musicCoverAddress: " << musicCoverAddress;
-
-            hotSongModel->setItem(n,2,new QStandardItem(singerName)); //歌手名
-            hotSongModel->setItem(n,3,new QStandardItem(musicAlbum)); //专辑名
-            hotSongModel->setItem(n,4,new QStandardItem("undefined")); //时长
-            hotSongModel->item(n,2)->setToolTip(singerName);
-            hotSongModel->item(n,3)->setToolTip(musicAlbum);
-            hotSongModel->item(n,4)->setToolTip("undefined");
-            hotSongModel->item(n,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-            hotSongModel->item(n,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-            hotSongModel->item(n,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-            hotSongModel->item(n,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-            hotSongModel->item(n,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-
-            ++n;
-
-            ui->tableView_hotSongTable->setColumnWidth(0, 30);
-            ui->tableView_hotSongTable->setColumnWidth(1, 230);
-            ui->tableView_hotSongTable->setColumnWidth(2, 140);
-            ui->tableView_hotSongTable->setColumnWidth(3, 181);
-            ui->tableView_hotSongTable->setColumnWidth(4, 90);
-
-            if (n >= 200)
+            //在 json 文本中 {}花括号里面是QJsonObject对象, []方括号里面是QJsonArray
+            QJsonObject resultObject = totalObject["result"].toObject();     //就将带 result 的内容提取后转换为对象
+            QStringList resultKeys = resultObject.keys();      //保存所有key
+    //        qDebug() << __LINE__ << resultKeys;
+            if(resultKeys.contains("songs"))                    //如果 key 为songs ,代表找到了歌曲
             {
-                n = 0;
-                ui->label_loading->hide();
-                setControlEnabled(true, ui->pushButton_rankList);
-                loop.quit();
-                return;
+                ui->pushButton_lastPage->setVisible(true);
+                ui->pushButton_nextPage->setVisible(true); //搜到歌曲后允许上下翻页
+                int k = 0;
+                QJsonArray array = resultObject["songs"].toArray();
+                for(const auto &i : qAsConst(array))                   //开始获取歌曲中的信息
+                {
+                    QJsonObject object = i.toObject();
+                    musicId = object["id"].toInt();                         // 音乐id
+                    musicDuration = object["duration"].toInt();             // 音乐长度
+                    qDebug() << "musicDuration: " << musicDuration;
+                    musicName = object["name"].toString();                  // 音乐名
+                    mvId = object["mvid"].toInt();                          // mvid
+                    QStringList artistsKeys = object.keys();
+                    qDebug() << "artistsKeys: " << artistsKeys;
+                    if(artistsKeys.contains("artists"))                //如果result中包含了 artists
+                    {
+                        QJsonArray artistsArray = object["artists"].toArray();   //将 artist 的内容提取后保存
+                        for(const auto &j : qAsConst(artistsArray))
+                        {
+                            QJsonObject object2 = j.toObject();
+                            singerName = object2["name"].toString();         // 歌手名
+                            imgAddress = object2["img1v1Url"].toString(); //专辑图片路径
+                            qDebug() << __LINE__ << object2.keys() << imgAddress;
+                        }
+                    }
+                    if(artistsKeys.contains("album"))                //包含了专辑
+                    {
+                        QJsonObject albumObjct = object["album"].toObject();
+                        albumName = albumObjct["name"].toString();            // 专辑名
+                        QStringList artistList = albumObjct.keys();
+                        if(artistList.contains("artist"))
+                        {
+                            QJsonArray artistArray = albumObjct["artist"].toArray();
+                            qDebug() << __LINE__ << artistList << artistArray;
+                            for (const auto &j : qAsConst(artistArray))
+                            {
+                                QJsonObject tmpObj = j.toObject();
+                                imgAddress = tmpObj["img1v1Url"].toString(); //第二种方式拿专辑图片路径
+                                qDebug() << __LINE__ << "imgAddress: " << imgAddress;
+                            }
+                        }
+                    }
+
+                    qDebug() << "musicId: " << musicId;
+                    qDebug() << "musicName: " << musicName;
+                    qDebug() << "singerName: " << singerName;
+                    qDebug() << "musicDuration: " << musicDuration;
+                    qDebug() << "albumName: " << albumName;
+                    qDebug() << "imgAddress: " << imgAddress;
+                    qDebug() << "mvId: " << mvId;
+
+                    model->setItem(k,0, new QStandardItem(QString::number(k+1)));
+                    model->setItem(k,1,new QStandardItem(musicName)); //音乐名称
+                    model->setItem(k,2,new QStandardItem(singerName)); //歌手名
+                    model->setItem(k,3,new QStandardItem(albumName)); //专辑名
+                    QString time = QString("%1:%2").arg(musicDuration/1000/60, 2, 10, QLatin1Char('0')).arg(musicDuration/1000%60, 2, 10, QLatin1Char('0'));
+                    model->setItem(k,4,new QStandardItem(time)); //歌曲时长
+                    model->setItem(k,5,new QStandardItem(QString::number(musicId))); //歌曲ID
+                    model->setItem(k,6,new QStandardItem(imgAddress)); //歌曲图片路径
+                    model->setItem(k,7,new QStandardItem(QString::number(mvId))); //MVID
+
+                    model->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
+                    model->item(k,2)->setToolTip(singerName);
+                    model->item(k,3)->setToolTip(albumName);
+                    model->item(k,4)->setToolTip(time);
+                    model->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                    model->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                    model->item(k,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                    model->item(k,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                    model->item(k,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+                    qDebug() << "time: " << time << "k: " << k;
+                    k++;
+
+                    QString url;
+                    url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicId);
+                    searchPlaylist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
+                }
+                ui->tableView_search->setColumnWidth(0, 10);
+                ui->tableView_search->setColumnWidth(1, 230);
+                ui->tableView_search->setColumnWidth(2, 150);
+                ui->tableView_search->setColumnWidth(3, 176);
+                ui->tableView_search->setColumnWidth(4, 120);
+                ui->tableView_search->setColumnWidth(5, 0);
+                ui->tableView_search->setColumnWidth(6, 0);
+                ui->tableView_search->setColumnWidth(7, 0);
+                ui->tableView_search->hideColumn(5);
+                ui->tableView_search->hideColumn(6);
+                ui->tableView_search->hideColumn(7);
+                ui->tableView_search->setModel(model);
+            }
+            else if(resultKeys.contains("tracks")) //热歌榜 使用第二种api
+            {
+                qDebug() << __LINE__ << "tracks";
+    //            int k = 0;
+    //            QJsonArray tracksArray = resultObject["tracks"].toArray();
+    //            for (const auto &i : qAsConst(tracksArray))
+    //            {
+    //                QJsonObject object = i.toObject();
+    //                int musicId = object["id"].toInt();
+    //                int musicDuration = object["duration"].toInt();
+    //                QString musicName = object["name"].toString();
+    //                int mvId = object["mvid"].toInt();
+    //                QString singerName;
+    //                QString imgAddress;
+    //                QStringList artistsKeys = object.keys();
+    //                if(artistsKeys.contains("artists"))
+    //                {
+    //                    QJsonArray artistsArray = object["artists"].toArray();   //将 artist 的内容提取后保存
+    //                    for(const auto &j : qAsConst(artistsArray))
+    //                    {
+    //                        QJsonObject object2 = j.toObject();
+    //                        singerName = object2["name"].toString();         // 歌手名
+    //                        imgAddress = object2["img1v1Url"].toString(); //专辑图片路径
+    //                        qDebug() << __LINE__ << object2.keys() << imgAddress;
+    //                    }
+    //                }
+    //                QString albumName;
+    //                if(artistsKeys.contains("album"))                //包含了专辑
+    //                {
+    //                    QJsonObject albumObjct = object["album"].toObject();
+    //                    albumName = albumObjct["name"].toString();            // 专辑名
+    //                    QStringList artistList = albumObjct.keys();
+    //                    if(artistList.contains("artist"))
+    //                    {
+    //                        QJsonArray artistArray = albumObjct["artist"].toArray();
+    //                        qDebug() << __LINE__ << artistList << artistArray;
+    //                        for (const auto &j : qAsConst(artistArray))
+    //                        {
+    //                            QJsonObject tmpObj = j.toObject();
+    //                            imgAddress = tmpObj["img1v1Url"].toString(); //第二种方式拿专辑图片路径
+    //                            qDebug() << __LINE__ << "imgAddress: " << imgAddress;
+    //                        }
+    //                    }
+    //                }
+
+    //                qDebug() << "musicId: " << musicId;
+    //                qDebug() << "musicName: " << musicName;
+    //                qDebug() << "singerName: " << singerName;
+    //                qDebug() << "musicDuration: " << musicDuration;
+    //                qDebug() << "albumName: " << albumName;
+    //                qDebug() << "imgAddress: " << imgAddress;
+    //                qDebug() << "mvId: " << mvId;
+
+    //                hotSongModel->setItem(k,0, new QStandardItem(QString::number(k+1)));
+    //                hotSongModel->setItem(k,1,new QStandardItem(musicName)); //音乐名称
+    //                hotSongModel->setItem(k,2,new QStandardItem(singerName)); //歌手名
+    //                hotSongModel->setItem(k,3,new QStandardItem(albumName)); //专辑名
+    //                QString time = QString("%1:%2").arg(musicDuration/1000/60, 2, 10, QLatin1Char('0')).arg(musicDuration/1000%60, 2, 10, QLatin1Char('0'));
+    //                hotSongModel->setItem(k,4,new QStandardItem(time)); //歌曲时长
+    //                hotSongModel->setItem(k,5,new QStandardItem(QString::number(musicId))); //歌曲ID
+    //                hotSongModel->setItem(k,6,new QStandardItem(imgAddress)); //歌曲图片路径
+    //                hotSongModel->setItem(k,7,new QStandardItem(QString::number(mvId))); //MVID
+
+
+    //                hotSongModel->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
+    //                hotSongModel->item(k,2)->setToolTip(singerName);
+    //                hotSongModel->item(k,3)->setToolTip(albumName);
+    //                hotSongModel->item(k,4)->setToolTip(time);
+
+    //                hotSongModel->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //                hotSongModel->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //                hotSongModel->item(k,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //                hotSongModel->item(k,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //                hotSongModel->item(k,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+    //                getSongDetailsBySongID(QString::number(musicId));
+    //                loop.exec(QEventLoop::ExcludeUserInputEvents);
+    //                QApplication::processEvents(QEventLoop::AllEvents, 10);//防止阻塞界面
+
+    //                QString url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicId);
+    //                hotSongPlaylist->addMedia(QUrl(url));
+
+    //                ++k;
+    //            }
+
+    //            ui->tableView_hotSongTable->setColumnWidth(0, 10);
+    //            ui->tableView_hotSongTable->setColumnWidth(1, 230);
+    //            ui->tableView_hotSongTable->setColumnWidth(2, 150);
+    //            ui->tableView_hotSongTable->setColumnWidth(3, 176);
+    //            ui->tableView_hotSongTable->setColumnWidth(4, 120);
+    //            ui->tableView_hotSongTable->setColumnWidth(5, 0);
+    //            ui->tableView_hotSongTable->setColumnWidth(6, 0);
+    //            ui->tableView_hotSongTable->setColumnWidth(7, 0);
+    //            ui->tableView_hotSongTable->hideColumn(5);
+    //            ui->tableView_hotSongTable->hideColumn(6);
+    //            ui->tableView_hotSongTable->hideColumn(7);
+    //            ui->tableView_hotSongTable->setModel(hotSongModel);
             }
         }
-    }
-    else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //MV播放
-    {
-        QJsonObject dataObject = totalObject["data"].toObject();
-        QStringList dataKeyList = dataObject.keys();
-        QString songName = dataObject["name"].toString(); //歌曲名
-        QString singerName = dataObject["artistName"].toString(); //歌手名
-        if (dataKeyList.contains("brs"))
+        else if(keys.contains("lrc")) //处理歌词
         {
-            QJsonObject brsObject = dataObject["brs"].toObject();
-            QStringList brsKeyList = brsObject.keys();
-            QList<int> iKeyList; //保存最大分辨率
-            for (const auto &i : qAsConst(brsKeyList))
+            QJsonObject lrcObject = totalObject["lrc"].toObject();     //就将带 msg 的内容提取后转换为对象
+            QStringList resultKeys = lrcObject.keys();      //保存所有key
+            qDebug() << __LINE__ << resultKeys;
+            if (resultKeys.contains("lyric"))
             {
-                iKeyList.append(i.toInt());
+                allLyricMap.clear();
+
+                QString strLyric = lrcObject["lyric"].toString();
+                lyricList = strLyric.split("\n");
+
+    //            QFile file("./lyric.txt"); //也可以使用文件保存歌词
+    //            file.remove();
+    //            if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate))
+    //            {
+    //                QTextStream stream(&file);
+    //                stream.seek(file.size());
+    //                for (auto& i : lyricList)
+    //                {
+    //                    QString strLineLyric;
+    //                    strLineLyric.append(i);
+    //                    stream << strLineLyric << "\n";
+
+    ////                    QCoreApplication::processEvents();
+    //                }
+    //                file.close();
+
+    ////                emit changeLyric();
+    //            }
+                refrashLyric(); //获得新歌词后刷新歌词
             }
-            qSort(iKeyList.begin(), iKeyList.end());
-//            brsKeyList.sort();
-            qDebug() << __LINE__ <<brsObject["240"].toString();
-            qDebug() << __LINE__ <<brsObject["480"].toString();
-            qDebug() << __LINE__ <<brsObject["720"].toString() << iKeyList;
+        }
+        else if(keys.contains("msg")) //处理歌单(未完成)
+        {
+            QJsonObject msgObject = totalObject["msg"].toObject();     //就将带 msg 的内容提取后转换为对象
+            QStringList msgKeys = msgObject.keys();      //保存所有key
+            qDebug() << __LINE__ << msgKeys;
+        }
+        if(keys.contains("data") && keys.count() == 3)  //热歌榜 (已优化，此当作第二方案)
+        {
+    //        int k = 0;
+    //        QJsonArray hotSongArray = json_recv["data"].toArray();
+    //        qDebug() << __LINE__ << hotSongArray;
+    //        for (const auto &i : qAsConst(hotSongArray))
+    //        {
+    //            QJsonObject object = i.toObject();
+    //            QString musicName = object["name"].toString();
+    //            QString musicMid = object["mid"].toString();
+    //            QString musicPlayAddress = object["play"].toString();
 
-            QString mvRatio = brsObject[QString::number(iKeyList.last())].toString();
-            qDebug() << __LINE__ << mvRatio << brsKeyList << (mvWidget == nullptr);
+    //            qDebug() << "hotmusicName: " << musicName;
+    //            qDebug() << "hotmusicMid: " << musicMid;
+    //            qDebug() << "hotmusicPlayAddress: " << musicPlayAddress;
 
-            player->pause(); //播放mv时暂停播放音乐
-            ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
-            ui->pushButton_playPause->setToolTip("播放");
+    //            hotSongModel->setItem(k,0, new QStandardItem(QString::number(k+1)));
+    //            hotSongModel->setItem(k,1,new QStandardItem(musicName)); //音乐名称
+    //            hotSongModel->setItem(k,5,new QStandardItem(musicMid)); //音乐ID
+    //            hotSongModel->setItem(k,6,new QStandardItem(musicPlayAddress)); //歌曲播放地址
+    //            hotSongModel->item(k,1)->setToolTip(musicName); //鼠标悬停时显示信息
 
-            videoPlaylist->clear(); //播放列表只需要一个mv
-            videoPlaylist->addMedia(QUrl(mvRatio)); //添加返回的音乐到播放列表中
-            videoPlayer->setPlaylist(videoPlaylist);
-            videoPlayer->play();
-            mvWidget->resize(720, 480);
-            mvWidget->setWindowTitle(songName + " - " + singerName + " - " + QString::number(iKeyList.last()) + "p");
-            mvWidget->setAutoFillBackground(true);
-            mvWidget->show();
-            this->hide();
+    //            hotSongModel->item(k,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //            hotSongModel->item(k,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+    //            ++k;
+
+    //            getSongDetailsBySongID(musicMid);
+    //            loop.exec(QEventLoop::ExcludeUserInputEvents);
+    //            QApplication::processEvents(QEventLoop::AllEvents, 10);//防止阻塞界面
+
+    //            QString url=QString("https://music.163.com/song/media/outer/url?id=%0").arg(musicMid);
+    //            hotSongPlaylist->addMedia(QUrl(url));                     //添加返回的音乐到播放列表中
+    //        }
+
+    //        ui->tableView_hotSongTable->setColumnWidth(0, 30);
+    //        ui->tableView_hotSongTable->setColumnWidth(1, 230);
+    //        ui->tableView_hotSongTable->setColumnWidth(2, 140);
+    //        ui->tableView_hotSongTable->setColumnWidth(3, 181);
+    //        ui->tableView_hotSongTable->setColumnWidth(4, 105);
+    //        ui->tableView_hotSongTable->hideColumn(5);
+    //        ui->tableView_hotSongTable->hideColumn(6);
+    //        ui->tableView_hotSongTable->setModel(hotSongModel);
+        }
+        if(keys.contains("cover") && keys.contains("album") && keys.count() == 7) //处理歌曲信息详情 (同上，已优化，此当做第二方案)
+        {
+    //        QString strPicWebsite = json_recv["cover"].toString();
+    //        qDebug() << __LINE__ << strPicWebsite;
+    //        if (strPicWebsite.contains("https"))
+    //        {
+    //            strPicWebsite = "http" + strPicWebsite.mid(5, -1);
+    //        }
+    //        qDebug() << __LINE__ << strPicWebsite;
+    //        networkRequest->setUrl(QUrl(strPicWebsite));
+    //        networkManager->get(*networkRequest);
+
+    //        if (ui->stackedWidget->currentIndex() == 2)
+    //        {
+    //            static int n = 0; //填充第几行
+    //            QString singerName = totalObject["artist"].toString();
+    //            QString musicAlbum = totalObject["album"].toString();
+    //            QString musicCoverAddress = totalObject["cover"].toString();
+
+    //            qDebug() << "singerName: " << singerName;
+    //            qDebug() << "musicAlbum: " << musicAlbum;
+    //            qDebug() << "musicCoverAddress: " << musicCoverAddress;
+
+    //            hotSongModel->setItem(n,2,new QStandardItem(singerName)); //歌手名
+    //            hotSongModel->setItem(n,3,new QStandardItem(musicAlbum)); //专辑名
+    //            hotSongModel->setItem(n,4,new QStandardItem("undefined")); //时长
+    //            hotSongModel->item(n,2)->setToolTip(singerName);
+    //            hotSongModel->item(n,3)->setToolTip(musicAlbum);
+    //            hotSongModel->item(n,4)->setToolTip("undefined");
+    //            hotSongModel->item(n,0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //            hotSongModel->item(n,1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //            hotSongModel->item(n,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //            hotSongModel->item(n,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    //            hotSongModel->item(n,4)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+    //            ++n;
+
+    //            ui->tableView_hotSongTable->setColumnWidth(0, 30);
+    //            ui->tableView_hotSongTable->setColumnWidth(1, 230);
+    //            ui->tableView_hotSongTable->setColumnWidth(2, 140);
+    //            ui->tableView_hotSongTable->setColumnWidth(3, 181);
+    //            ui->tableView_hotSongTable->setColumnWidth(4, 90);
+
+    //            if (n >= 200)
+    //            {
+    //                n = 0;
+    //                ui->label_loading->hide();
+    //                setControlEnabled(true, ui->pushButton_rankList);
+    //                loop.quit();
+    //                return;
+    //            }
+    //        }
+        }
+        else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //MV播放
+        {
+            QJsonObject dataObject = totalObject["data"].toObject();
+            QStringList dataKeyList = dataObject.keys();
+            QString songName = dataObject["name"].toString(); //歌曲名
+            QString singerName = dataObject["artistName"].toString(); //歌手名
+            if (dataKeyList.contains("brs"))
+            {
+                QJsonObject brsObject = dataObject["brs"].toObject();
+                QStringList brsKeyList = brsObject.keys();
+                QList<int> iKeyList; //保存最大分辨率
+                for (const auto &i : qAsConst(brsKeyList))
+                {
+                    iKeyList.append(i.toInt());
+                }
+                qSort(iKeyList.begin(), iKeyList.end());
+    //            brsKeyList.sort();
+                qDebug() << __LINE__ <<brsObject["240"].toString();
+                qDebug() << __LINE__ <<brsObject["480"].toString();
+                qDebug() << __LINE__ <<brsObject["720"].toString() << iKeyList;
+
+                QString mvRatio = brsObject[QString::number(iKeyList.last())].toString();
+                qDebug() << __LINE__ << mvRatio << brsKeyList << (mvWidget == nullptr);
+
+                player->pause(); //播放mv时暂停播放音乐
+                ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
+                ui->pushButton_playPause->setToolTip("播放");
+
+                videoPlaylist->clear(); //播放列表只需要一个mv
+                videoPlaylist->addMedia(QUrl(mvRatio)); //添加返回的音乐到播放列表中
+                videoPlayer->setPlaylist(videoPlaylist);
+                videoPlayer->play();
+                mvWidget->resize(720, 480);
+                mvWidget->setWindowTitle(songName + " - " + singerName + " - " + QString::number(iKeyList.last()) + "p");
+                mvWidget->setAutoFillBackground(true);
+                mvWidget->show();
+                this->hide();
+            }
         }
     }
 }
@@ -1053,7 +1218,7 @@ void MainWindow::refrashLyric()
 //        emit setLyricSig(allLyricMap);
 //    }
 
-    for (auto i : lyricList)
+    for (const auto &i : qAsConst(lyricList))
     {
         analysisLyricsFile(i);//解析歌词文件内容
     }
@@ -1248,6 +1413,10 @@ void MainWindow::refreshCurrentMusic(int iCurrentRow)
             hotSongPlaylist->setCurrentIndex(row);
 //            hotSongPlaylist->blockSignals(false);
             connect(hotSongPlaylist, &QMediaPlaylist::currentIndexChanged, this, &MainWindow::refreshCurrentMusic);
+            return;
+        }
+        if (iCurrentRow != row) //经常会自己跳到第一行，暂不清楚原因，避免重复获取歌词
+        {
             return;
         }
 

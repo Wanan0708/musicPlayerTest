@@ -26,6 +26,8 @@ FORMS += \
     mainwindow.ui \
     mvshow.ui
 
+RC_ICONS = ./image/dinosaur.ico
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

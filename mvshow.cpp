@@ -60,18 +60,26 @@ bool mvShow::eventFilter(QObject *obj, QEvent *event)
     {
         if (event->type() == QEvent::MouseButtonDblClick) //无法分辨单击双击信号
         {
-            if (this->windowState() == Qt::WindowFullScreen)
+            QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);  // 类型转换
+            if (mouseEvent->button() == Qt::RightButton)
             {
-                this->showNormal();
-            }
-            else
-            {
-                this->showFullScreen();
+                if (this->windowState() == Qt::WindowFullScreen)
+                {
+                    this->showNormal();
+                }
+                else
+                {
+                    this->showFullScreen();
+                }
             }
         }
-        if (event->type() == QEvent::MouseButtonPress)
+        else if (event->type() == QEvent::MouseButtonPress)
         {
-            emit clickToPlayPause();
+            QMouseEvent * mouseEvent = static_cast<QMouseEvent *>(event);  // 类型转换
+            if (mouseEvent->button() == Qt::LeftButton)
+            {
+                emit clickToPlayPause();
+            }
         }
         else if(event->type() == QEvent::WindowStateChange)
         {
