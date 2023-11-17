@@ -25,12 +25,10 @@ signals:
     void beHide();
 
 public slots:
-    void slotChangeLyric();
     void slotChangeSongImage(QPixmap pixmap);
     void slotModifiedSongInfor(QMap<QString, QString> map);
     void slotGetLyric(QMap<int, QString> map);
     void slotChangeSingleLyric(int pos);
-    void slotRepeatPlay();
 
 private slots:
     void on_pushButton_hide_clicked();

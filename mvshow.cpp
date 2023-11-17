@@ -16,43 +16,6 @@ mvShow::~mvShow()
     delete ui;
 }
 
-//void mvShow::closeEvent(QCloseEvent *event)
-//{
-//    emit stopPlaySig();
-//    event->accept();
-//}
-
-////响应全屏(修改为事件过滤器)
-//void mvShow::changeEvent(QEvent *event)
-//{
-//    qDebug() << "event->type: " << event->type() << this->windowState();
-//    if(event->type()!=QEvent::WindowStateChange) return;
-//    if(this->windowState() == Qt::WindowMaximized)
-//    {
-//        this->showFullScreen();
-//    }
-//    else if(this->windowState() == Qt::WindowMinimized)
-//    {
-//        this->showMinimized();
-//    }
-//}
-
-////按下esc恢复窗口
-//void mvShow::keyPressEvent(QKeyEvent *event)
-//{
-//   switch(event->key())
-//   {
-//   case Qt::Key_Escape:
-//   {
-//       this->showNormal();
-//       break;
-//   }
-//   default:
-//       QWidget::keyPressEvent(event);
-//   }
-//}
-
-
 bool mvShow::eventFilter(QObject *obj, QEvent *event)
 {
     qDebug() << __LINE__ << event->type();

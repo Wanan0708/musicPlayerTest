@@ -56,7 +56,6 @@ public:
     void GetSongLyricBySongId(QString musicId);
     void getSongPicBySongID(QString musicID);
     void refrashLyric();
-    void getSongDetailsBySongID(QString songID);
     void setControlEnabled(bool bFlag, QPushButton *button);
 
 signals:
@@ -114,9 +113,13 @@ private slots:
 
     void on_tableView_hotSongTable_doubleClicked(const QModelIndex &index);
 
-    void slotDealMenu(QPoint point);
+    void slotDealSearchMenu(QPoint point);
 
     void slotPlayMV();
+
+    void slotDealRankMenu(QPoint point);
+
+    void slotDealRankAction();
 
 private:
     Ui::MainWindow *ui;
@@ -150,7 +153,12 @@ private:
     QStringList lyricList; //未处理过的歌词
 
     QMenu *popMenu; //搜索界面右键菜单
-    QAction *playMVAction; //菜单选项
+    QAction *playMVAction; //播放mv选项
+    QMenu *rankMenu; //排行榜右键菜单
+    QAction *newMenu;
+    QAction *upMenu;
+    QAction *hotMenu;
+    QAction *dyMenu;
 
     QMediaPlayer *videoPlayer; //播放mv
     QMediaPlaylist *videoPlaylist; //mv播放列表

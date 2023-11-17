@@ -34,28 +34,6 @@ void lyricShow::on_pushButton_hide_clicked()
     emit beHide();
 }
 
-void lyricShow::slotChangeLyric()
-{
-    qDebug() << Q_FUNC_INFO;
-//    ui->textEdit_lyric->clear();
-//    QFile file("./lyric.txt");
-//    QTextStream in(&file);
-//    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-//    {
-//        while (!in.atEnd())
-//        {
-//            QString strLineStream = in.readLine();
-//            QStringList listUseLyric = strLineStream.split("]");
-//            QString strUseLyric = listUseLyric.last();
-//            ui->textEdit_lyric->append(strUseLyric);
-//            ui->textEdit_lyric->setAlignment(Qt::AlignCenter);  //水平居中
-//        }
-//        file.close();
-//    }
-}
-
-
-
 void lyricShow::slotChangeSongImage(QPixmap pixmap)
 {
     if (!pixmap.isNull())
@@ -117,13 +95,4 @@ void lyricShow::slotChangeSingleLyric(int pos)
         ui->textEdit_lyric->setTextCursor(cursor);
     }
 
-}
-
-void lyricShow::slotRepeatPlay()
-{
-    ui->textEdit_lyric->clear();
-    for (int i = 0; i < 6; ++i)
-    {
-        ui->textEdit_lyric->append("\n");
-    }
 }

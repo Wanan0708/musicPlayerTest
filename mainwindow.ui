@@ -236,8 +236,8 @@ margin-bottom:4px;
 
 QPushButton:pressed
 {
-	padding-left:3px;
-	padding-top:3px;
+	padding-left:5px;
+	padding-top:5px;
 }</string>
     </property>
     <property name="text">
@@ -284,8 +284,8 @@ QPushButton:pressed
 
 QPushButton:pressed
 {
-	padding-left:3px;
-	padding-top:3px;
+	padding-left:5px;
+	padding-top:5px;
 }</string>
     </property>
     <property name="text">
