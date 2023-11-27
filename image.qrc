@@ -18,5 +18,7 @@
         <file>image/dinosaur.png</file>
         <file>image/loading.gif</file>
         <file>image/newloading.gif</file>
+        <file>image/playCounts.png</file>
+        <file>image/songsCount.png</file>
     </qresource>
 </RCC>

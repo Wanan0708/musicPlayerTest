@@ -126,7 +126,7 @@ QPushButton:pressed
      <rect>
       <x>80</x>
       <y>529</y>
-      <width>201</width>
+      <width>231</width>
       <height>31</height>
      </rect>
     </property>
@@ -439,7 +439,7 @@ margin-bottom:4px;
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QTableView" name="tableView_search">
@@ -515,15 +515,66 @@ QPushButton:hover{
      </widget>
     </widget>
     <widget class="QWidget" name="page_2">
-     <widget class="QTableView" name="tableView_songSheet">
+     <widget class="QStackedWidget" name="stackedWidget_songSheet">
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>0</y>
-        <width>701</width>
+        <width>705</width>
         <height>441</height>
        </rect>
       </property>
+      <widget class="QWidget" name="page_6">
+       <widget class="QTableWidget" name="tableWidget_songSheet">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>702</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_7">
+       <widget class="QTableView" name="tableView_singleSheet">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>702</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">	color: black;                                       /*表格内文字颜色*/
+	gridline-color: black;                              /*表格内框颜色*/
+    /*表格内背景色*/
+    /*alternate-background-color: rgb(255, 255, 255);*/
+    selection-color: black;                             /*选中区域的文字颜色*/
+    selection-background-color: rgb(245, 245, 245);        /*选中区域的背景色*/
+	border: 0px groove gray;
+	padding: 1px 0px;
+   </string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_sheetLoading">
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>140</y>
+          <width>161</width>
+          <height>131</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="page_3">
@@ -583,7 +634,7 @@ QScrollBar::handle:vertical:hover{/*鼠标触及滑块样式 */
        <number>25</number>
       </attribute>
      </widget>
-     <widget class="QLabel" name="label_loading">
+     <widget class="QLabel" name="label_rankLoading">
       <property name="enabled">
        <bool>false</bool>
       </property>

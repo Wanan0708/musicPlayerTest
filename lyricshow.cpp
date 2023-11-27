@@ -88,7 +88,7 @@ void lyricShow::slotChangeSingleLyric(int pos)
     cursor.movePosition(QTextCursor::Start); //修改进度条之后也可以正常显示
     ui->textEdit_lyric->setTextCursor(cursor);
 
-    for (int j = 0; j < tmpLoop; ++j)
+    for (int j = 0; j <= tmpLoop + 1; ++j)
     {
         cursor.movePosition(QTextCursor::Down);
         cursor.movePosition(QTextCursor::StartOfLine);

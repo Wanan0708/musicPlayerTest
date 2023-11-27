@@ -13,18 +13,21 @@ SOURCES += \
     lyricshow.cpp \
     main.cpp \
     mainwindow.cpp \
-    mvshow.cpp
+    mvshow.cpp \
+    singlesheetshow.cpp
 
 HEADERS += \
     datebase.h \
     lyricshow.h \
     mainwindow.h \
-    mvshow.h
+    mvshow.h \
+    singlesheetshow.h
 
 FORMS += \
     lyricshow.ui \
     mainwindow.ui \
-    mvshow.ui
+    mvshow.ui \
+    singlesheetshow.ui
 
 RC_ICONS = ./image/dinosaur.ico
 

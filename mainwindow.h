@@ -38,6 +38,13 @@
 #include "ui_lyricshow.h"
 #include "datebase.h"
 #include "mvshow.h"
+#include "singlesheetshow.h"
+
+#define PAGE_SEARCH 0
+#define PAGE_SONGSHEET 1
+#define PAGE_RANKSHEET 2
+#define PAGE_SETTING 3
+#define PAGE_USERINFO 4
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -65,6 +72,7 @@ signals:
     void setLyricSig(QMap<int, QString>);
     void changeSingleLyric(int pos);
     void repeatPlaySig();
+    void setSheetImageSig();
 
 private slots:
     void getWeight(int id);
@@ -121,22 +129,33 @@ private slots:
 
     void slotDealRankAction();
 
+    void slotDealSheetMenu(QPoint point);
+
+    void slotBackAction();
+
+    void slotShowSingleSheet(QString id);
+
+    void on_tableView_singleSheet_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
 
     lyricShow lyric; //歌词界面
-    mvShow *mvWidget;
+    mvShow *mvWidget; //MV
+    SingleSheetShow *sheetShow; //歌单
 
     QNetworkAccessManager *networkManager;
     QNetworkRequest *networkRequest;
 
     QStandardItemModel* model; //填充搜到的歌曲tableview单元格
     QStandardItemModel* hotSongModel; //热歌榜model
+    QStandardItemModel* songSheetModel; //歌单model
     QString durationTime; //音乐时长
     QString imgAddress; //专辑图片地址
     QMediaPlayer *player; //播放音乐
     QMediaPlaylist *searchPlaylist; //搜索页播放列表
     QMediaPlaylist *hotSongPlaylist; //热歌榜播放列表
+    QMediaPlaylist *songSheetPlaylist; //歌单播放列表
     QTextDocument* doc;
     QTextBlock textLine;
     int musicId;//音乐ID
@@ -147,6 +166,7 @@ private:
     bool bMute; //是否静音
     bool bSearchSongSheet; //避免重复搜索歌单
     bool bHotSongList; //避免重复搜索热歌榜
+    bool bSongSheet; //避免重复搜索歌单
     QString musicName,singerName,albumName;
     QByteArray searchInfo; //存储接收到的信息
     QMap<int, QString> allLyricMap; //存储歌词 <时间，歌词>
@@ -159,6 +179,8 @@ private:
     QAction *upMenu;
     QAction *hotMenu;
     QAction *dyMenu;
+    QMenu *sheetMenu; //歌单右键菜单
+    QAction *backMenu;
 
     QMediaPlayer *videoPlayer; //播放mv
     QMediaPlaylist *videoPlaylist; //mv播放列表
