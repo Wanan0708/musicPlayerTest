@@ -369,7 +369,8 @@ void MainWindow::getWeight(int id)
 //        ui->stackedWidget_songSheet->setCurrentIndex(0);
 //        QString str = "http://api.yimian.xyz/msc/?type=playlist&id=2557908184"; //可用  每日推荐歌单
 //        QString str = QString("http://music.163.com/api/playlist/detail?id=2557908184"); //不稳定
-        QString str = "http://music.cyrilstudio.top/recommend/resource"; //每日推荐歌单
+//        QString str = "http://music.cyrilstudio.top/recommend/resource"; //每日推荐歌单(需登录)
+        QString str = "http://music.cyrilstudio.top/top/playlist/highquality";
 
         networkRequest->setUrl(QUrl(str));
         networkManager->get(*networkRequest);
@@ -458,7 +459,7 @@ void MainWindow::databack(QNetworkReply *reply)
         }
         QPixmap pixmap; //处理图片
         pixmap.loadFromData(searchInfo);
-        qDebug() << __LINE__ << searchInfo << pixmap;
+        qDebug() << __LINE__ << searchInfo << pixmap << json_recv.isNull();
         if (!pixmap.isNull())
         {
             emit changeSongImage(pixmap);
@@ -802,6 +803,59 @@ void MainWindow::databack(QNetworkReply *reply)
                 connect(sheetShow, &SingleSheetShow::showSingleSheetSig, this, &MainWindow::slotShowSingleSheet);
             }
         }
+        else if (keys.contains("playlists") && keys.count() == 5) //精选歌单
+        {
+            QJsonArray listArray = totalObject["playlists"].toArray();
+            qDebug() << __LINE__ << listArray;
+            ui->tableWidget_songSheet->setRowCount(listArray.size()/3);
+            ui->tableWidget_songSheet->setColumnCount(3);
+            int iPos = 0;
+            for (const auto &i : qAsConst(listArray))
+            {
+                QJsonObject object = i.toObject();
+
+                double strId = object["id"].toDouble();
+//                int strType = object["type"].toInt();
+                QString strSongName = object["name"].toString();
+                QString picUrl = object["coverImgUrl"].toString();
+                double playCount = object["playCount"].toDouble();
+                double createTime = object["createTime"].toDouble();
+                double trackCount = object["trackCount"].toDouble();
+
+                QString singerName;
+                QJsonObject creatorObj = object["creator"].toObject();
+                singerName = creatorObj["nickname"].toString();
+
+                qDebug() << "strId = " << strId << object["id"].type() << object["id"].toVariant() << QString::number(strId, 'f', 0);
+//                qDebug() << "strType = " << strType << object["type"].type() << QString::number(strType, 'f', 0);
+                qDebug() << "strSongName = " << strSongName << object["name"].type();
+                qDebug() << "picUrl = " << picUrl << object["picUrl"].type();
+                qDebug() << "playCount = " << playCount << object["playCount"].type() << QString::number(playCount, 'f', 0);
+                qDebug() << "createTime = " << createTime << object["createTime"].type() << QString::number(createTime, 'f', 0);
+                qDebug() << "trackCount = " << trackCount << object["trackCount"].type() << QString::number(trackCount, 'f', 0);
+
+                sheetShow = new SingleSheetShow();
+                sheetShow->setSheetValues(QString::number(strId, 'f', 0), singerName, strSongName, picUrl, QString::number(createTime, 'f', 0), QString::number(playCount, 'f', 0), QString::number(trackCount, 'f', 0));
+
+                ui->tableWidget_songSheet->setCellWidget(iPos/3, iPos%3, sheetShow);
+                qDebug() << "rowCount==== " << ui->tableWidget_songSheet->rowCount() << ui->tableWidget_songSheet->columnCount() << iPos;
+                iPos++;
+
+                if (picUrl.contains("https"))
+                {
+                    picUrl = "http" + picUrl.mid(5, -1);
+                }
+                qDebug() << __LINE__ << picUrl;
+                networkRequest->setUrl(QUrl(picUrl)); //获取专辑图片
+                networkManager->get(*networkRequest);
+
+                loop.exec(QEventLoop::ExcludeUserInputEvents); //保证每个widget图片对应上
+
+                QCoreApplication::processEvents(); //防止阻塞界面
+
+                connect(sheetShow, &SingleSheetShow::showSingleSheetSig, this, &MainWindow::slotShowSingleSheet);
+            }
+        }
         else if (keys.contains("subed") && keys.contains("data") && keys.count() == 7) //MV播放
         {
             QJsonObject dataObject = totalObject["data"].toObject();
@@ -842,6 +896,7 @@ void MainWindow::databack(QNetworkReply *reply)
             }
         }
     }
+    reply->deleteLater();
 }
 
 //播放暂停
@@ -1399,6 +1454,7 @@ void MainWindow::refreshCurrentMusic(int iCurrentRow)
 {
     QMediaPlaylist *playlist = qobject_cast<QMediaPlaylist *>(sender());
     qDebug()<<"lineEdit->objectName()=="<<(playlist==hotSongPlaylist) << iCurrentRow;
+    ui->label_lyric->clear();
 
     if (playlist == hotSongPlaylist)
     {
@@ -1624,7 +1680,8 @@ void MainWindow::slotDealSheetMenu(QPoint point)
 //返回歌单
 void MainWindow::slotBackAction()
 {
-    QString str = "http://music.cyrilstudio.top/recommend/resource"; //每日推荐歌单
+//    QString str = "http://music.cyrilstudio.top/recommend/resource"; //每日推荐歌单
+    QString str = "http://music.cyrilstudio.top/top/playlist/highquality";
 
     networkRequest->setUrl(QUrl(str));
     networkManager->get(*networkRequest);
