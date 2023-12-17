@@ -34,6 +34,9 @@
 #include <QVideoWidget>
 #include <QMenu>
 #include <QAction>
+#include <QTranslator>
+#include <QTableView>
+#include <QListView>
 #include "lyricshow.h"
 #include "ui_lyricshow.h"
 #include "datebase.h"
@@ -64,6 +67,7 @@ public:
     void getSongPicBySongID(QString musicID);
     void refrashLyric();
     void setControlEnabled(bool bFlag, QPushButton *button);
+    bool event(QEvent *event);
 
 signals:
     void changeLyric();
@@ -73,6 +77,7 @@ signals:
     void changeSingleLyric(int pos);
     void repeatPlaySig();
     void setSheetImageSig();
+    void refreshLanguage(int lan);
 
 private slots:
     void getWeight(int id);
@@ -137,6 +142,8 @@ private slots:
 
     void on_tableView_singleSheet_doubleClicked(const QModelIndex &index);
 
+    void on_comboBox_language_currentIndexChanged(int index);
+
 private:
     Ui::MainWindow *ui;
 
@@ -156,8 +163,6 @@ private:
     QMediaPlaylist *searchPlaylist; //搜索页播放列表
     QMediaPlaylist *hotSongPlaylist; //热歌榜播放列表
     QMediaPlaylist *songSheetPlaylist; //歌单播放列表
-    QTextDocument* doc;
-    QTextBlock textLine;
     int musicId;//音乐ID
     int musicDuration; //音乐时长（未处理）
     int mvId; //mvID

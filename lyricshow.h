@@ -21,6 +21,8 @@ public:
     explicit lyricShow(QWidget *parent = nullptr);
     ~lyricShow();
 
+    bool event(QEvent *event);
+
 signals:
     void beHide();
 

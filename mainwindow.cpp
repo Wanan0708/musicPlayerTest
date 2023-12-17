@@ -105,7 +105,7 @@ void MainWindow::init()
     ui->tableView_search->setContextMenuPolicy(Qt::CustomContextMenu); //可弹出右键菜单
     popMenu = new QMenu(ui->tableView_search);
     playMVAction = new QAction();
-    playMVAction->setText("播放MV");
+    playMVAction->setText(tr("播放MV"));
     popMenu->addAction(playMVAction);
     connect(ui->tableView_search, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotDealSearchMenu(QPoint)));
     connect(playMVAction, &QAction::triggered, this, &MainWindow::slotPlayMV);
@@ -116,10 +116,10 @@ void MainWindow::init()
     upMenu = new QAction();
     hotMenu = new QAction();
     dyMenu = new QAction();
-    newMenu->setText("新歌榜");
-    upMenu->setText("飙升榜");
-    hotMenu->setText("热歌榜");
-    dyMenu->setText("抖音榜");
+    newMenu->setText(tr("新歌榜"));
+    upMenu->setText(tr("飙升榜"));
+    hotMenu->setText(tr("热歌榜"));
+    dyMenu->setText(tr("抖音榜"));
     rankMenu->addAction(newMenu);
     rankMenu->addAction(upMenu);
     rankMenu->addAction(hotMenu);
@@ -133,7 +133,7 @@ void MainWindow::init()
     ui->tableView_singleSheet->setContextMenuPolicy(Qt::CustomContextMenu); //可弹出右键菜单
     sheetMenu = new QMenu(ui->tableView_singleSheet);
     backMenu = new QAction();
-    backMenu->setText("返回歌单界面");
+    backMenu->setText(tr("返回歌单界面"));
     sheetMenu->addAction(backMenu);
     connect(ui->tableView_singleSheet, &QTableView::customContextMenuRequested, this, &MainWindow::slotDealSheetMenu);
     connect(backMenu, &QAction::triggered, this, &MainWindow::slotBackAction);
@@ -158,7 +158,7 @@ void MainWindow::init()
         if (state == QMediaPlayer::StoppedState) {
             qDebug() << "music play finished." << searchPlaylist->nextIndex(1) << searchPlaylist->previousIndex(1);
             ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
-            ui->pushButton_playPause->setToolTip("播放");
+            ui->pushButton_playPause->setToolTip(tr("播放"));
         }
     });
 
@@ -170,7 +170,7 @@ void MainWindow::init()
         allLyricMap.clear();
         ui->label_lyric->clear();
         ui->pushButton_playPause->setStyleSheet("QPushButton {border-image: url(':/new/prefix1/image/newPlay.png');}");
-        ui->pushButton_playPause->setToolTip("播放");
+        ui->pushButton_playPause->setToolTip(tr("播放"));
         player->stop();
     });
 
@@ -201,7 +201,7 @@ void MainWindow::initControlStylesheet()
     ui->buttonGroup->setId(ui->pushButton_login,4);
 
     QStringList headerList;
-    headerList << "#" << "歌曲名称" << "歌手名" << "专辑名" << "时长";
+    headerList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
     QHeaderView *hearview = new QHeaderView(Qt::Horizontal); //歌曲table
     model = new QStandardItemModel;
     model->setHorizontalHeaderLabels(headerList);
@@ -219,7 +219,7 @@ void MainWindow::initControlStylesheet()
     ui->tableView_search->setFocusPolicy(Qt::NoFocus);
 
     QStringList hotSongHeaderList;
-    hotSongHeaderList << "#" << "歌曲名称" << "歌手名" << "专辑名" << "时长";
+    hotSongHeaderList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
     QHeaderView *hotSongHearview = new QHeaderView(Qt::Horizontal); //歌曲table
     hotSongModel = new QStandardItemModel(); //热歌榜table
     hotSongModel->setHorizontalHeaderLabels(hotSongHeaderList);
@@ -238,7 +238,7 @@ void MainWindow::initControlStylesheet()
     ui->tableView_hotSongTable->setFocusPolicy(Qt::NoFocus);
 
     QStringList songSheetHeaderList; //歌单table
-    songSheetHeaderList << "#" << "歌曲名称" << "歌手名" << "专辑名" << "时长";
+    songSheetHeaderList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
     QHeaderView *songSheetHearview = new QHeaderView(Qt::Horizontal); //歌曲table
     songSheetModel = new QStandardItemModel(); //热歌榜table
     songSheetModel->setHorizontalHeaderLabels(songSheetHeaderList);
@@ -265,19 +265,27 @@ void MainWindow::initControlStylesheet()
 
     ui->pushButton_lastPage->setVisible(false);
     ui->pushButton_nextPage->setVisible(false);
-    ui->pushButton_lastPage->setToolTip("上一页");
-    ui->pushButton_nextPage->setToolTip("下一页");
-    ui->pushButton_lastSong->setToolTip("上一曲");
-    ui->pushButton_nextSong->setToolTip("下一曲");
-    ui->pushButton_playPause->setToolTip("播放");
-    ui->pushButton_volume->setToolTip("静音");
-    ui->pushButton_quit->setToolTip("关闭");
-    ui->pushButton_minimize->setToolTip("最小化");
-    ui->pushButton_search->setToolTip("搜索");
-    ui->pushButton_songSheet->setToolTip("歌单");
-    ui->pushButton_rankList->setToolTip("排行榜");
-    ui->pushButton_setting->setToolTip("设置");
-    ui->pushButton_login->setToolTip("用户中心");
+    ui->pushButton_lastPage->setToolTip(tr("上一页"));
+    ui->pushButton_nextPage->setToolTip(tr("下一页"));
+    ui->pushButton_lastSong->setToolTip(tr("上一曲"));
+    ui->pushButton_nextSong->setToolTip(tr("下一曲"));
+    ui->pushButton_playPause->setToolTip(tr("播放"));
+    ui->pushButton_volume->setToolTip(tr("静音"));
+    ui->pushButton_quit->setToolTip(tr("关闭"));
+    ui->pushButton_minimize->setToolTip(tr("最小化"));
+    ui->pushButton_search->setToolTip(tr("搜索"));
+    ui->pushButton_songSheet->setToolTip(tr("歌单"));
+    ui->pushButton_rankList->setToolTip(tr("排行榜"));
+    ui->pushButton_setting->setToolTip(tr("设置"));
+    ui->pushButton_login->setToolTip(tr("用户中心"));
+
+    ui->comboBox_language->setView(new QListView());
+//    ui->comboBox_language->setLineEdit(new QLineEdit);//需要添加行编辑器，否则无法设置对齐方式
+//    ui->comboBox_language->lineEdit()->setReadOnly(true);
+//    ui->comboBox_language->lineEdit()->setAlignment(Qt::AlignCenter); //想设置居中有些问题
+
+    ui->comboBox_language->addItem(tr("中文"));
+    ui->comboBox_language->addItem(tr("English"));
 
     QIcon searchIcon(":/new/prefix1/image/search.png"); // 加载左侧按键图标
     QPixmap searchPixmap = searchIcon.pixmap(QSize(40, 40)); // 转换为40x40大小的QPixmap
@@ -537,7 +545,7 @@ void MainWindow::databack(QNetworkReply *reply)
             ui->tableView_singleSheet->hideColumn(6);
 
             QStringList songSheetHeaderList; //切换榜单后会更新hotSongModel
-            songSheetHeaderList << "#" << "歌曲名称" << "歌手名" << "专辑名" << "时长";
+            songSheetHeaderList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
             songSheetModel->setHorizontalHeaderLabels(songSheetHeaderList);
 
             ui->tableView_singleSheet->setModel(songSheetModel);
@@ -603,7 +611,7 @@ void MainWindow::databack(QNetworkReply *reply)
             ui->tableView_hotSongTable->hideColumn(6);
 
             QStringList hotSongHeaderList; //切换榜单后会更新hotSongModel
-            hotSongHeaderList << "#" << "歌曲名称" << "歌手名" << "专辑名" << "时长";
+            hotSongHeaderList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
             hotSongModel->setHorizontalHeaderLabels(hotSongHeaderList);
 
             ui->tableView_hotSongTable->setModel(hotSongModel);
@@ -1316,6 +1324,23 @@ void MainWindow::setControlEnabled(bool bFlag, QPushButton *button)
     button->setEnabled(true);
 }
 
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+
+        QStringList hotSongHeaderList; //切换榜单后会更新hotSongModel
+        hotSongHeaderList << "#" << tr("歌曲名称") << tr("歌手名") << tr("专辑名") << tr("时长");
+        hotSongModel->setHorizontalHeaderLabels(hotSongHeaderList);
+        model->setHorizontalHeaderLabels(hotSongHeaderList);
+        songSheetModel->setHorizontalHeaderLabels(hotSongHeaderList);
+
+        return true;
+    }
+    return QWidget::event(event);
+}
+
 //打开歌词窗口
 void MainWindow::on_pushButton_minPhoto_clicked()
 {
@@ -1768,5 +1793,11 @@ void MainWindow::on_tableView_singleSheet_doubleClicked(const QModelIndex &index
     qDebug() << __LINE__ << strMusicImg;
     networkRequest->setUrl(QUrl(strMusicImg)); //获取专辑图片
     networkManager->get(*networkRequest);
+}
+
+//切换语言
+void MainWindow::on_comboBox_language_currentIndexChanged(int index)
+{
+    emit refreshLanguage(index + 1); //1为中文  2为英文
 }
 

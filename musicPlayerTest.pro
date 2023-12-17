@@ -29,6 +29,9 @@ FORMS += \
     mvshow.ui \
     singlesheetshow.ui
 
+TRANSLATIONS += trans_zh_CN.ts \
+    trans_en_US.ts
+
 RC_ICONS = ./image/dinosaur.ico
 
 # Default rules for deployment.
@@ -37,4 +40,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    image.qrc
+    image.qrc \
+    translate.qrc

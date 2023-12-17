@@ -30,13 +30,17 @@ bool SingleSheetShow::eventFilter(QObject *obj, QEvent *event)
                 emit showSingleSheetSig(this->id);
             }
         }
+        else if (event->type() == QEvent::LanguageChange)
+        {
+            ui->retranslateUi(this);
+        }
         else
         {
             return false;
         }
         return true; // 注意这里一定要返回true，表示你要过滤该事件原本的实现
     }
-    return false;
+    return QWidget::event(event);
 }
 
 void SingleSheetShow::setSheetValues(QString id, QString singerName, QString sheetName, QString imgAdd, QString createTime, QString playCount, QString trackCount)

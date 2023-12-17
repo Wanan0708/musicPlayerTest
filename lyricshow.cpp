@@ -29,6 +29,17 @@ lyricShow::~lyricShow()
     delete ui;
 }
 
+bool lyricShow::event(QEvent *event)
+{
+    qDebug() << event->type();
+    if (event->type() == QEvent::LanguageChange)
+    {
+        ui->retranslateUi(this);
+        return true;
+    }
+    return QWidget::event(event);
+}
+
 void lyricShow::on_pushButton_hide_clicked()
 {
     emit beHide();
